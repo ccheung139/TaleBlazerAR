@@ -37,7 +37,10 @@ public class SearchScript : MonoBehaviour {
 
             GameObject newPikachu = Instantiate (pikachu, closestPoint, Quaternion.identity) as GameObject;
             newPikachu.transform.parent = chosenBuilding.transform;
-            newPikachu.AddComponent<PikachuScript> ().camera = camera;
+            PikachuScript ps = newPikachu.AddComponent<PikachuScript> ();
+            ps.camera = camera;
+            ps.map = _map;
+            ps.mapTransform = _mapTransform;
 
             found = true;
         }
