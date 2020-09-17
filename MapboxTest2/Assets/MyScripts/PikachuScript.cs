@@ -26,7 +26,7 @@ public class PikachuScript : MonoBehaviour {
             // update to ensure Pikachu reappears when close
             distance = Vector3.Distance (camera.transform.position, transform.position);
             if (distance < 7f) {
-                transform.localScale = new Vector3 (0.04f, 0.04f, 0.04f);
+                transform.localScale = new Vector3 (0.01f, 0.01f, 0.01f);
             }
 
         }
