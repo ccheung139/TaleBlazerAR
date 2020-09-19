@@ -69,7 +69,7 @@ public class ReferencePointManagerWithFeaturePoints : MonoBehaviour {
             debugLog.gameObject.SetActive (true);
             removeBallButton.gameObject.SetActive (true);
             ChangeColor (Color.gray);
-            GroupBalls();
+            GroupBalls ();
 
             GameObject obj = hitObject.transform.gameObject;
             selectedBall = obj;
@@ -78,7 +78,7 @@ public class ReferencePointManagerWithFeaturePoints : MonoBehaviour {
         } else {
             if (selectedBall != null) {
                 ChangeColor (Color.gray);
-                GroupBalls();
+                GroupBalls ();
                 selectedBall = null;
                 removeBallButton.gameObject.SetActive (false);
                 return;
@@ -128,10 +128,20 @@ public class ReferencePointManagerWithFeaturePoints : MonoBehaviour {
     }
 
     private void GroupBalls () {
-        List<Collider[]> colliders = new List<Collider[]> ();
-        List<List<GameObject>> nodes = new List<List<GameObject>> ();
-        List<GameObject> allBalls = new List<GameObject> ();
+        var result = FindColliders ();
 
+        List<Collider[]> colliders = result.Item1;
+        List<GameObject> allBalls = result.Item2;
+        List<Collider[]> sortedColliders = colliders.OrderByDescending (collider => collider.Length).Where (collider => collider.Length >= 3).ToList ();
+
+        List<List<GameObject>> nodes = FindNodes (sortedColliders);
+        ChangeNodesToGreen (nodes);
+        ChangeNonNodestoGray (nodes, allBalls);
+    }
+
+    private (List<Collider[]>, List<GameObject>) FindColliders () {
+        List<Collider[]> colliders = new List<Collider[]> ();
+        List<GameObject> allBalls = new List<GameObject> ();
         foreach (ARReferencePoint referencePoint in referencePoints) {
             GameObject ball = referencePoint.gameObject;
             allBalls.Add (ball);
@@ -140,8 +150,11 @@ public class ReferencePointManagerWithFeaturePoints : MonoBehaviour {
 
             colliders.Add (hitColliders);
         }
-        List<Collider[]> sortedColliders = colliders.OrderByDescending (collider => collider.Length).Where (collider => collider.Length >= 3).ToList ();
+        return (colliders, allBalls);
+    }
 
+    private List<List<GameObject>> FindNodes (List<Collider[]> sortedColliders) {
+        List<List<GameObject>> nodes = new List<List<GameObject>> ();
         foreach (Collider[] foundColliders in sortedColliders) {
             List<GameObject> foundBalls = foundColliders.Select (col => col.gameObject).ToList ();
 
@@ -155,7 +168,10 @@ public class ReferencePointManagerWithFeaturePoints : MonoBehaviour {
                 }
             }
         }
+        return nodes;
+    }
 
+    private void ChangeNodesToGreen (List<List<GameObject>> nodes) {
         foreach (List<GameObject> foundNode in nodes) {
             foreach (GameObject groupBall in foundNode) {
                 if (groupBall == selectedBall) {
@@ -167,7 +183,9 @@ public class ReferencePointManagerWithFeaturePoints : MonoBehaviour {
                 }
             }
         }
+    }
 
+    private void ChangeNonNodestoGray (List<List<GameObject>> nodes, List<GameObject> allBalls) {
         List<GameObject> allGroupedBalls = nodes.SelectMany (ball => ball).ToList ();
         foreach (GameObject ball in allBalls) {
             if (!allGroupedBalls.Contains (ball)) {
