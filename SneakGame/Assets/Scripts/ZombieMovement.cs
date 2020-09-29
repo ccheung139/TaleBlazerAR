@@ -14,6 +14,13 @@ public class ZombieMovement : MonoBehaviour {
     public GameObject gameOverPanel;
     public GameObject gameWonPanel;
     public Text healthText;
+    public int dangerLevel = 0;
+    public GameObject yellowCanvas;
+    public GameObject orangeCanvas;
+    public GameObject redCanvas;
+    public int currentDangerLevel = 0;
+    public bool leftArrowOn = false;
+    public bool rightArrowOn = false;
 
     private float moveAfterSeconds = 5.0f;
     private float stillTimer = 0;
@@ -29,6 +36,8 @@ public class ZombieMovement : MonoBehaviour {
     private float healthTimer = 0;
     private float bulbTimer = 0;
     private float bulbTimerTotal = 1.0f;
+    private float angryTimer = 0;
+    private float angryTimerTotal = 1.0f;
 
     private Queue<float> lastFiveSpeeds = new Queue<float> ();
     private int sizeOfQueue = 0;
@@ -54,17 +63,25 @@ public class ZombieMovement : MonoBehaviour {
             AlertZombie (avgSpeed, distance);
         }
         CheckDamage (distance);
+        CheckOffScreenIndicator (distance);
     }
 
     private void HandleSuspisciousZombie (float distance) {
         Renderer userRenderer = arCamera.gameObject.GetComponent<Renderer> ();
 
         if (distance > 7f) {
-            suspiscious = false;
-            zombieBulb.SetActive (false);
-            healthTimer = 0;
+            if (angryTimer >= angryTimerTotal) {
+                angryTimer = 0;
+                dangerLevel = 0;
+                suspiscious = false;
+                zombieBulb.SetActive (false);
+                healthTimer = 0;
+                currentDangerLevel = 0;
+            } else {
+                angryTimer += Time.deltaTime * 1.0f;
+            }
         } else {
-            Vector3 zombieEyePosition = transform.position + new Vector3(0, 1.6f, 0);
+            Vector3 zombieEyePosition = transform.position + new Vector3 (0, 1.6f, 0);
             var n = arCamera.transform.position - zombieEyePosition;
             ray.origin = zombieEyePosition;
             ray.direction = n;
@@ -73,9 +90,12 @@ public class ZombieMovement : MonoBehaviour {
                 if (hit.collider.gameObject != arCamera.gameObject) {
                     if (suspisciousTimer >= suspisciousTimerTotal) {
                         suspisciousTimer = 0;
+                        dangerLevel = 0;
                         suspiscious = false;
+                        angryTimer = 0;
                         zombieBulb.SetActive (false);
                         healthTimer = 0;
+                        currentDangerLevel = 0;
                     } else {
                         suspisciousTimer += Time.deltaTime * 1.0f;
                     }
@@ -86,6 +106,9 @@ public class ZombieMovement : MonoBehaviour {
             }
 
             n.y = 0;
+            if (n.x == 0 && n.z == 0) {
+                return;
+            }
             var newRotation = Quaternion.LookRotation (n) * Quaternion.Euler (0, 0, 0);
 
             transform.rotation = Quaternion.Slerp (transform.rotation, newRotation, Time.deltaTime * 1f);
@@ -135,7 +158,8 @@ public class ZombieMovement : MonoBehaviour {
     }
 
     private void AlertZombie (float avgSpeed, float distance) {
-        if (distance > 10f) {
+        if (distance > 6f) {
+            currentDangerLevel = 0;
             return;
         }
         if (avgSpeed >.2f) {
@@ -143,7 +167,9 @@ public class ZombieMovement : MonoBehaviour {
             zombieBulb.SetActive (true);
             orangeBulb.SetActive (false);
             yellowBulb.SetActive (false);
+            angryTimer = 0;
             bulbTimer = 0;
+            currentDangerLevel = 3;
 
             Vector3 direction = arCamera.transform.position - transform.position;
             ray = new Ray (transform.position, direction);
@@ -152,11 +178,13 @@ public class ZombieMovement : MonoBehaviour {
                 orangeBulb.SetActive (true);
                 yellowBulb.SetActive (false);
                 bulbTimer = 0;
+                currentDangerLevel = 2;
             } else if (avgSpeed >.07f) {
                 if (!orangeBulb.activeSelf || bulbTimer >= bulbTimerTotal) {
                     yellowBulb.SetActive (true);
                     orangeBulb.SetActive (false);
                     bulbTimer = 0;
+                    currentDangerLevel = 1;
                 } else {
                     bulbTimer += Time.deltaTime * 1.0f;
                 }
@@ -165,6 +193,7 @@ public class ZombieMovement : MonoBehaviour {
                     yellowBulb.SetActive (false);
                     orangeBulb.SetActive (false);
                     bulbTimer = 0;
+                    currentDangerLevel = 0;
                 } else {
                     bulbTimer += Time.deltaTime * 1.0f;
                 }
@@ -190,6 +219,29 @@ public class ZombieMovement : MonoBehaviour {
             } else {
                 stillTimer += Time.deltaTime * 1.0f;
             }
+        }
+    }
+
+    private void CheckOffScreenIndicator (float distance) {
+        if (distance <= 1.0f || !suspiscious) {
+            leftArrowOn = false;
+            rightArrowOn = false;
+            return;
+        }
+        if (!GetComponent<Renderer> ().IsVisibleFrom (arCamera)) {
+            Vector3 direction = transform.position - arCamera.transform.position;
+            float angle = Vector3.SignedAngle (direction, arCamera.transform.forward, Vector3.up);
+            Debug.Log (angle);
+            if (angle < -5.0f) {
+                Debug.Log ("turn right");
+                rightArrowOn = true;
+            } else if (angle > 5.0f) {
+                Debug.Log ("turn left");
+                leftArrowOn = true;
+            }
+        } else {
+            leftArrowOn = false;
+            rightArrowOn = false;
         }
     }
 

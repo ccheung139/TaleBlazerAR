@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,72 +13,74 @@ using UnityEngine.XR.ARSubsystems;
 public class SpawnZombies : MonoBehaviour {
     [SerializeField]
     private GameObject zombiePrefab;
-
     [SerializeField]
     private GameObject zombieBulb;
-    
     [SerializeField]
     private GameObject orangeBulb;
-
     [SerializeField]
     private GameObject yellowBulb;
-
     [SerializeField]
     private GameObject wallPrefab;
-
     [SerializeField]
     private Camera arCamera;
-
     [SerializeField]
     private Camera zombieCamera;
-
     [SerializeField]
     private GameObject gameOverPanel;
-
     [SerializeField]
     private GameObject gameWonPanel;
-
     [SerializeField]
     private GameObject outOfWallsPanel;
-
     [SerializeField]
     private Text wallText;
-
     [SerializeField]
     private Text healthText;
-
     [SerializeField]
     private Material blackMat;
-
     [SerializeField]
     private Material redMat;
-
     [SerializeField]
     private Button retrieveWallButton;
-
     [SerializeField]
     private EventSystem eventSystem;
-
     [SerializeField]
     private GameObject trophyPrefab;
+    [SerializeField]
+    private GameObject yellowCanvas;
+    [SerializeField]
+    private GameObject orangeCanvas;
+    [SerializeField]
+    private GameObject redCanvas;
+    [SerializeField]
+    private GameObject leftArrowPrefab;
+    [SerializeField]
+    private GameObject rightArrowPrefab;
 
     private int totalZombies = 5;
     private int numWalls = 5;
     private int healthPoints = 100;
     private GameObject selectedWall = null;
+    private int currentDangerLevel = 0;
 
     [Header ("For detecting button press")]
     private ARRaycastManager arRaycastManager;
 
     private static List<ARRaycastHit> hits = new List<ARRaycastHit> ();
+    private static List<ZombieMovement> zombieScripts = new List<ZombieMovement> ();
 
     void Start () {
         healthText.text = "Health: " + healthPoints;
-        outOfWallsPanel.SetActive (false);
         wallText.text = "Walls left: " + numWalls;
+
         zombieCamera.enabled = false;
+        outOfWallsPanel.SetActive (false);
         gameOverPanel.SetActive (false);
         gameWonPanel.SetActive (false);
+        rightArrowPrefab.SetActive (false);
+        leftArrowPrefab.SetActive (false);
+
+        ResetColorCanvases ();
+
         retrieveWallButton.onClick.AddListener (RetrieveWall);
         arRaycastManager = GetComponent<ARRaycastManager> ();
         Invoke ("StartZombieRun", 3);
@@ -92,7 +95,7 @@ public class SpawnZombies : MonoBehaviour {
         }
         Vector3 trophyPosition = (cumulativePositions / (float) totalZombies) + new Vector3 (0, 0, 10);
         GameObject trophy = Instantiate (trophyPrefab, trophyPosition, Quaternion.identity);
-        TrophyScript script = trophy.AddComponent<TrophyScript>();
+        TrophyScript script = trophy.AddComponent<TrophyScript> ();
         script.arCamera = arCamera;
         script.gameOverPanel = gameOverPanel;
         script.gameWonPanel = gameWonPanel;
@@ -102,7 +105,7 @@ public class SpawnZombies : MonoBehaviour {
         Vector3 playerPosition = arCamera.transform.position;
 
         float randX = (float) (rand.NextDouble () * 7);
-        float randZ = (float) ((rand.NextDouble () * 10) + 2);
+        float randZ = (float) ((rand.NextDouble () * 10) + 7);
         Vector3 newPosition = playerPosition + new Vector3 (rand.Next (2) == 1 ? randX : -randX, -1.5f, randZ);
 
         GameObject newZombie = Instantiate (zombiePrefab, newPosition, Quaternion.identity);
@@ -112,22 +115,33 @@ public class SpawnZombies : MonoBehaviour {
         bulb1.SetActive (false);
         bulb2.SetActive (false);
         bulb3.SetActive (false);
+
         ZombieMovement script = newZombie.AddComponent<ZombieMovement> ();
-        Camera camera = Instantiate (zombieCamera, newPosition + new Vector3 (0, 1.8f, 0), newZombie.transform.rotation, newZombie.transform);
 
         script.rand = rand;
         script.arCamera = arCamera;
         script.zombieBulb = bulb1;
-        script.zombieCamera = camera;
+        script.zombieCamera = GetComponent<Camera> ();
         script.gameOverPanel = gameOverPanel;
         script.healthText = healthText;
         script.gameWonPanel = gameWonPanel;
         script.orangeBulb = bulb2;
         script.yellowBulb = bulb3;
+        script.yellowCanvas = yellowCanvas;
+        script.orangeCanvas = orangeCanvas;
+        script.redCanvas = redCanvas;
+
+        zombieScripts.Add (script);
         return newPosition;
     }
 
     void Update () {
+        HandleTouch ();
+        HandleScreenColor ();
+        HandleOffScreenArrows ();
+    }
+
+    private void HandleTouch () {
         if (Input.touchCount == 0) {
             return;
         }
@@ -137,10 +151,30 @@ public class SpawnZombies : MonoBehaviour {
             return;
         }
 
-        HandleTouch (touch);
+        TouchOccurred (touch);
     }
 
-    private void HandleTouch (Touch touch) {
+    private void HandleScreenColor () {
+        int maxDanger = 0;
+        foreach (ZombieMovement script in zombieScripts) {
+            maxDanger = Math.Max (maxDanger, script.currentDangerLevel);
+        }
+        if (currentDangerLevel == maxDanger) {
+            return;
+        }
+
+        currentDangerLevel = maxDanger;
+        ResetColorCanvases ();
+        if (maxDanger == 1) {
+            yellowCanvas.SetActive (true);
+        } else if (maxDanger == 2) {
+            orangeCanvas.SetActive (true);
+        } else if (maxDanger == 3) {
+            redCanvas.SetActive (true);
+        }
+    }
+
+    private void TouchOccurred (Touch touch) {
         Ray ray = arCamera.ScreenPointToRay (touch.position);
         RaycastHit hitObject;
         if (Physics.Raycast (ray, out hitObject)) {
@@ -153,8 +187,19 @@ public class SpawnZombies : MonoBehaviour {
                 selectedWall.GetComponent<Renderer> ().sharedMaterial = blackMat;
                 selectedWall = null;
             }
-
             PlaceWall (touch);
+        }
+    }
+
+    private void HandleOffScreenArrows () {
+        leftArrowPrefab.SetActive (false);
+        rightArrowPrefab.SetActive (false);
+        foreach (ZombieMovement script in zombieScripts) {
+            if (script.leftArrowOn) {
+                leftArrowPrefab.SetActive (true);
+            } else if (script.rightArrowOn) {
+                rightArrowPrefab.SetActive (true);
+            }
         }
     }
 
@@ -165,11 +210,11 @@ public class SpawnZombies : MonoBehaviour {
 
                 float distance = Vector3.Distance (arCamera.transform.position, hitPose.position);
                 if (distance < 0.5f) {
-                    Debug.Log ("Too close!");
                     return;
                 }
 
-                GameObject wall = Instantiate (wallPrefab, hitPose.position, Quaternion.identity);
+                Vector3 wallPosition = new Vector3 (hitPose.position.x, arCamera.transform.position.y - 1.0f, hitPose.position.z);
+                GameObject wall = Instantiate (wallPrefab, wallPosition, Quaternion.identity);
                 RotateWall (wall);
                 SpikyWall script = wall.AddComponent<SpikyWall> ();
                 script.arCamera = arCamera;
@@ -214,5 +259,11 @@ public class SpawnZombies : MonoBehaviour {
         selectedWall = null;
         numWalls += 1;
         wallText.text = "Walls left: " + numWalls;
+    }
+
+    private void ResetColorCanvases () {
+        yellowCanvas.SetActive (false);
+        orangeCanvas.SetActive (false);
+        redCanvas.SetActive (false);
     }
 }
