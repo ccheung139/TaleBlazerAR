@@ -22,6 +22,10 @@ public class ZombieMovement : MonoBehaviour {
     public bool leftArrowOn = false;
     public bool rightArrowOn = false;
 
+    // slider fields
+    public int zombieDamage;
+    public float chaseSpeed;
+
     private float moveAfterSeconds = 5.0f;
     private float stillTimer = 0;
     private bool isMoving = false;
@@ -112,7 +116,7 @@ public class ZombieMovement : MonoBehaviour {
             var newRotation = Quaternion.LookRotation (n) * Quaternion.Euler (0, 0, 0);
 
             transform.rotation = Quaternion.Slerp (transform.rotation, newRotation, Time.deltaTime * 1f);
-            MoveZombie (new Vector3 (arCamera.transform.position.x, transform.position.y, arCamera.transform.position.z), 1.3f);
+            MoveZombie (new Vector3 (arCamera.transform.position.x, transform.position.y, arCamera.transform.position.z), chaseSpeed);
         }
     }
 
@@ -134,7 +138,7 @@ public class ZombieMovement : MonoBehaviour {
         } else if (healthPoints <= 5 && !gameWonPanel.activeSelf) {
             gameOverPanel.SetActive (true);
         }
-        int newHealth = Math.Max (healthPoints - 5, 0);
+        int newHealth = Math.Max (healthPoints - zombieDamage, 0);
         healthText.text = "Health: " + (newHealth);
     }
 
@@ -231,12 +235,9 @@ public class ZombieMovement : MonoBehaviour {
         if (!GetComponent<Renderer> ().IsVisibleFrom (arCamera)) {
             Vector3 direction = transform.position - arCamera.transform.position;
             float angle = Vector3.SignedAngle (direction, arCamera.transform.forward, Vector3.up);
-            Debug.Log (angle);
             if (angle < -5.0f) {
-                Debug.Log ("turn right");
                 rightArrowOn = true;
             } else if (angle > 5.0f) {
-                Debug.Log ("turn left");
                 leftArrowOn = true;
             }
         } else {

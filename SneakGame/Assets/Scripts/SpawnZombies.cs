@@ -56,8 +56,12 @@ public class SpawnZombies : MonoBehaviour {
     [SerializeField]
     private GameObject rightArrowPrefab;
 
-    private int totalZombies = 5;
-    private int numWalls = 5;
+    // slider fields
+    public int totalZombies;
+    public int zombieDamage;
+    public float chaseSpeed;
+    public int numWalls;
+
     private int healthPoints = 100;
     private GameObject selectedWall = null;
     private int currentDangerLevel = 0;
@@ -68,7 +72,7 @@ public class SpawnZombies : MonoBehaviour {
     private static List<ARRaycastHit> hits = new List<ARRaycastHit> ();
     private static List<ZombieMovement> zombieScripts = new List<ZombieMovement> ();
 
-    void Start () {
+    public void BeginSpawning() {
         healthText.text = "Health: " + healthPoints;
         wallText.text = "Walls left: " + numWalls;
 
@@ -130,6 +134,8 @@ public class SpawnZombies : MonoBehaviour {
         script.yellowCanvas = yellowCanvas;
         script.orangeCanvas = orangeCanvas;
         script.redCanvas = redCanvas;
+        script.zombieDamage = zombieDamage;
+        script.chaseSpeed = chaseSpeed;
 
         zombieScripts.Add (script);
         return newPosition;
