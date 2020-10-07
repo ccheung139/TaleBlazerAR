@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
@@ -72,7 +74,11 @@ public class SpawnZombies : MonoBehaviour {
     private static List<ARRaycastHit> hits = new List<ARRaycastHit> ();
     private static List<ZombieMovement> zombieScripts = new List<ZombieMovement> ();
 
-    public void BeginSpawning() {
+    private UnityEngine.Rendering.VolumeProfile v;
+    private UnityEngine.Rendering.Universal.Bloom b;
+    private bool volumeFound = false;
+
+    public void BeginSpawning () {
         healthText.text = "Health: " + healthPoints;
         wallText.text = "Walls left: " + numWalls;
 
@@ -103,6 +109,10 @@ public class SpawnZombies : MonoBehaviour {
         script.arCamera = arCamera;
         script.gameOverPanel = gameOverPanel;
         script.gameWonPanel = gameWonPanel;
+
+        UnityEngine.Rendering.VolumeProfile v = arCamera.GetComponent<UnityEngine.Rendering.Volume> ()?.profile;
+        v.TryGet (out b);
+        volumeFound = true;
     }
 
     private Vector3 SpawnNewZombie (System.Random rand) {
@@ -145,6 +155,7 @@ public class SpawnZombies : MonoBehaviour {
         HandleTouch ();
         HandleScreenColor ();
         HandleOffScreenArrows ();
+        HandleHealthScreen ();
     }
 
     private void HandleTouch () {
@@ -271,5 +282,21 @@ public class SpawnZombies : MonoBehaviour {
         yellowCanvas.SetActive (false);
         orangeCanvas.SetActive (false);
         redCanvas.SetActive (false);
+    }
+
+    private void HandleHealthScreen () {
+        if (!volumeFound) {
+            return;
+        }
+        int currentHealth = GetHealthPoints ();
+        if (currentHealth <= 50) {
+            b.intensity.value = (50 - currentHealth) / 25f;
+        }
+    }
+
+    private int GetHealthPoints () {
+        int index = healthText.text.LastIndexOf (' ');
+        string healthAmount = healthText.text.Substring (index + 1);
+        return Int32.Parse (healthAmount);
     }
 }
