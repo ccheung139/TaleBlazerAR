@@ -15,6 +15,12 @@ public class GestureButton : MonoBehaviour {
     public float timerTotal = 3.0f;
 
     void Update () {
+        if (SpawnCharacters.helpUpOn) {
+            timerTotal = 10.0f;
+        } else {
+            timerTotal = 3.0f;
+        }
+
         if (timer >= timerTotal && holdingDown) {
             ReleasedButton ();
         } else {

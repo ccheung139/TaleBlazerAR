@@ -41,7 +41,7 @@ public class DegreeTurningProperty : MonoBehaviour {
     }
 
     private void CheckDistance (float distance) {
-        if (distance < 1f && !turnedAlready) {
+        if (distance < .3f && !turnedAlready) {
             isTurning = true;
             turnedAlready = true;
             if (isImposter) {

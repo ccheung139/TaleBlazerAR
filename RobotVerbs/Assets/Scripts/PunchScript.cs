@@ -38,7 +38,7 @@ public class PunchScript : MonoBehaviour {
     }
 
     private void CheckPunch (float avgSpeed, float distance) {
-        if (distance < 2f && avgSpeed >= .25f) {
+        if (distance < 2f && avgSpeed >= .25f && gestureButtonScript.holdingDown) {
             transform.rotation = isImposter ? Quaternion.Euler (270, 270, 270) : Quaternion.Euler (90, 90, 90);
             gestureButtonScript.FinishGesture ();
             resultText.text = "You punched a robot!";
