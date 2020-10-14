@@ -49,7 +49,7 @@ public class HatScript : MonoBehaviour {
         newHat.transform.rotation = new Quaternion (0.0f, arCamera.transform.rotation.y, 0.0f, arCamera.transform.rotation.w);
 
         float distance = Vector3.Distance (newHat.transform.position, selectedSphere.transform.position);
-        if (distance < .5f) {
+        if (distance < .2f) {
             newHat.transform.position = selectedSphere.transform.position - new Vector3 (0, .09f, 0);
             gestureButtonScript.FinishGesture ();
             resultText.text = "You placed the hat!";

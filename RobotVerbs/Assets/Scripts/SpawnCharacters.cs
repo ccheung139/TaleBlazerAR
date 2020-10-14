@@ -16,7 +16,12 @@ public class SpawnCharacters : MonoBehaviour {
     public GameObject selectedSpherePrefab;
     public Text imposterGuessesText;
     public Text resultText;
+    public Text actionText;
     public GameObject hatPrefab;
+    public GameObject missilePrefab;
+    public GameObject throwBallPrefab;
+    public GameObject letterPrefab;
+    public GameObject penPrefab;
 
     public Button guessImposterButton;
     public Button holdButton;
@@ -26,6 +31,9 @@ public class SpawnCharacters : MonoBehaviour {
     public Button waveButton;
     public Button helpUpButton;
     public Button hatButton;
+    public Button defendButton;
+    public Button throwButton;
+    public Button signButton;
 
     public static bool handshakeOn = false;
     public static bool punchOn = false;
@@ -33,6 +41,9 @@ public class SpawnCharacters : MonoBehaviour {
     public static bool waveOn = false;
     public static bool helpUpOn = false;
     public static bool hatOn = false;
+    public static bool defendOn = false;
+    public static bool throwOn = false;
+    public static bool signOn = false;
 
     private int numRobots = 3;
     private int numImposterGuesses = 3;
@@ -60,10 +71,14 @@ public class SpawnCharacters : MonoBehaviour {
         waveButton.onClick.AddListener (StartWave);
         helpUpButton.onClick.AddListener (StartHelpUp);
         hatButton.onClick.AddListener (StartHat);
+        defendButton.onClick.AddListener (StartDefend);
+        throwButton.onClick.AddListener (StartThrow);
+        signButton.onClick.AddListener (StartSign);
 
         DisableAllGestureButtons ();
 
         imposterGuessesText.text = "Imposter Guesses: " + numImposterGuesses;
+        actionText.text = "";
         arRaycastManager = GetComponent<ARRaycastManager> ();
 
         System.Random rand = new System.Random ();
@@ -103,6 +118,9 @@ public class SpawnCharacters : MonoBehaviour {
         waveOn = false;
         helpUpOn = false;
         hatOn = false;
+        defendOn = false;
+        throwOn = false;
+        signOn = false;
     }
 
     private void HandleInteractRobot () {
@@ -133,11 +151,45 @@ public class SpawnCharacters : MonoBehaviour {
         UseJumpProperty (newRobot, isImposter, selectedSphere);
         UseWaveProperty (newRobot, isImposter, selectedSphere);
         UseHelpUpProperty (newRobot, isImposter, selectedSphere);
-        UseHatProperty(newRobot, isImposter, selectedSphere);
+        UseHatProperty (newRobot, isImposter, selectedSphere);
+        UseDefendProperty (newRobot, isImposter, selectedSphere);
+        UseThrowProperty (newRobot, isImposter, selectedSphere);
+        UseSignProperty (newRobot, isImposter, selectedSphere);
 
         if (isImposter) {
             imposter = newRobot;
         }
+    }
+
+    private void UseSignProperty (GameObject newRobot, bool isImposter, GameObject selectedSphere) {
+        SignScript script = newRobot.AddComponent<SignScript> ();
+        script.arCamera = arCamera;
+        script.isImposter = isImposter;
+        script.resultText = resultText;
+        script.gestureButtonScript = holdButton.GetComponent<GestureButton> ();
+        script.selectedSphere = selectedSphere;
+        script.letterPrefab = letterPrefab;
+        script.penPrefab = penPrefab;
+    }
+
+    private void UseThrowProperty (GameObject newRobot, bool isImposter, GameObject selectedSphere) {
+        ThrowScript script = newRobot.AddComponent<ThrowScript> ();
+        script.arCamera = arCamera;
+        script.isImposter = isImposter;
+        script.resultText = resultText;
+        script.gestureButtonScript = holdButton.GetComponent<GestureButton> ();
+        script.selectedSphere = selectedSphere;
+        script.throwBallPrefab = throwBallPrefab;
+    }
+
+    private void UseDefendProperty (GameObject newRobot, bool isImposter, GameObject selectedSphere) {
+        DefendScript script = newRobot.AddComponent<DefendScript> ();
+        script.arCamera = arCamera;
+        script.isImposter = isImposter;
+        script.resultText = resultText;
+        script.gestureButtonScript = holdButton.GetComponent<GestureButton> ();
+        script.selectedSphere = selectedSphere;
+        script.missilePrefab = missilePrefab;
     }
 
     private void UseHatProperty (GameObject newRobot, bool isImposter, GameObject selectedSphere) {
@@ -257,31 +309,55 @@ public class SpawnCharacters : MonoBehaviour {
     private void StartHandshake () {
         StandardStartUp ();
         handshakeOn = true;
+        actionText.text = "Handshake";
     }
 
     private void StartPunch () {
         StandardStartUp ();
         punchOn = true;
+        actionText.text = "Punch";
     }
 
     private void StartJump () {
         StandardStartUp ();
         jumpOn = true;
+        actionText.text = "Jump";
     }
 
     private void StartWave () {
         StandardStartUp ();
         waveOn = true;
+        actionText.text = "Wave";
     }
 
     private void StartHelpUp () {
         StandardStartUp ();
         helpUpOn = true;
+        actionText.text = "Help Up";
     }
 
     private void StartHat () {
         StandardStartUp ();
         hatOn = true;
+        actionText.text = "Hat";
+    }
+
+    private void StartDefend () {
+        StandardStartUp ();
+        defendOn = true;
+        actionText.text = "Defend";
+    }
+
+    private void StartThrow () {
+        StandardStartUp ();
+        throwOn = true;
+        actionText.text = "Throw";
+    }
+
+    private void StartSign () {
+        StandardStartUp ();
+        signOn = true;
+        actionText.text = "Sign";
     }
 
     private void StandardStartUp () {
@@ -289,6 +365,7 @@ public class SpawnCharacters : MonoBehaviour {
         DisableAllGestureButtons ();
         holdButton.gameObject.SetActive (true);
         resultText.text = "";
+        textTimer = 0;
     }
 
     private void EnableAllGestureButtons () {
@@ -297,6 +374,9 @@ public class SpawnCharacters : MonoBehaviour {
         jumpButton.gameObject.SetActive (true);
         waveButton.gameObject.SetActive (true);
         hatButton.gameObject.SetActive (true);
+        defendButton.gameObject.SetActive (true);
+        throwButton.gameObject.SetActive (true);
+        signButton.gameObject.SetActive (true);
         CheckHelpUpButton ();
     }
 
@@ -314,5 +394,8 @@ public class SpawnCharacters : MonoBehaviour {
         waveButton.gameObject.SetActive (false);
         helpUpButton.gameObject.SetActive (false);
         hatButton.gameObject.SetActive (false);
+        defendButton.gameObject.SetActive (false);
+        throwButton.gameObject.SetActive (false);
+        signButton.gameObject.SetActive (false);
     }
 }

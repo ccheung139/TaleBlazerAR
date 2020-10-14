@@ -25,7 +25,9 @@ public class Accelerometer : MonoBehaviour {
 
     [Header ("Shake Detection")]
     public Action OnShake;
+    public Action LighterShake;
     [SerializeField] private float shakeDetectionThreshold = 2.0f;
+    [SerializeField] private float shakeDetectionThresholdLighter = 1.0f;
     private float accelerometerUpdateInterval = 1.0f / 60.0f;
     private float lowPassKernelWidthInSeconds = 1.0f;
     private float lowPassFilterFactor;
@@ -47,6 +49,9 @@ public class Accelerometer : MonoBehaviour {
         // Shake Detection
         if (deltaAcceleration.sqrMagnitude >= shakeDetectionThreshold) {
             OnShake?.Invoke ();
+        }
+        if (deltaAcceleration.sqrMagnitude >= shakeDetectionThresholdLighter) {
+            LighterShake?.Invoke ();
         }
     }
 }
