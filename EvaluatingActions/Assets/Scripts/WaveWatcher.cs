@@ -16,7 +16,7 @@ public class WaveWatcher : MonoBehaviour {
                 leftRotate = true;
                 leftTime = pointsInTime[i];
             } else if (rotation > 0.8f) {
-                rightRotgate = true;
+                rightRotate = true;
                 rightTime = pointsInTime[i];
             }
 

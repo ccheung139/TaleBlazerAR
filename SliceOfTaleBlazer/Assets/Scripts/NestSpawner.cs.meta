@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 839b0aa458363405097bfb616e22081a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - blueJayPrefab: {instanceID: 0}
+  - startButton: {instanceID: 0}
+  - holdButton: {instanceID: 0}
+  - arCamera: {instanceID: 0}
+  - resultText: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
