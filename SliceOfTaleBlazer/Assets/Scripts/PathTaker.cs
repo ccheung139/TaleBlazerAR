@@ -83,10 +83,6 @@ public class PathTaker : MonoBehaviour {
         bool handshakeResult = handshakeWatcher.CheckHandshake (points, pointsInTime, shakeTimes);
         bool waveResult = waveWatcher.CheckWave (pointsInTime, rotationTimes);
 
-        // Debug.Log(gameObject);
-        // Debug.Log(startButton);
-        // Debug.Log("REsult: " + resultText.text);
-
         if (jumpResult) {
             resultText.text = "You jumped!";
             gameObject.SendMessage ("Hop");

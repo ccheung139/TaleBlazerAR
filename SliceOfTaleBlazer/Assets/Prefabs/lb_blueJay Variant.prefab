@@ -1,5 +1,21 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-6062922307455129711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8309118763589193713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff07a911fc0094495bd6900529c809eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  invScript: {fileID: 0}
+  arCamera: {fileID: 0}
+  breadOwnedPrefab: {fileID: 4184765127341340041, guid: 322b8a31da4374fe6a54af80101bfddf,
+    type: 3}
 --- !u!114 &159204740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70,7 +86,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8309118763589193713}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ec8a4126b77e4fdf9839d30bb5d856e, type: 3}
   m_Name: 
@@ -93,7 +109,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 100092, guid: 7b7d8539cdecdd94ba53e8af65a526f6, type: 3}
       propertyPath: m_Name
-      value: lb_blueJay
+      value: lb_blueJay Variant
       objectReference: {fileID: 0}
     - target: {fileID: 400092, guid: 7b7d8539cdecdd94ba53e8af65a526f6, type: 3}
       propertyPath: m_LocalPosition.x

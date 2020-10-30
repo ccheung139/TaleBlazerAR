@@ -6,65 +6,36 @@ using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 
 public class FollowLineController : MonoBehaviour {
-    [SerializeField]
-    private float distanceFromCamera = 1f;
-
-    [SerializeField]
-    private GameObject line;
-
-    [SerializeField]
-    private GameObject cube;
-
-    [SerializeField]
-    private int cornerVertices = 5;
-
-    [SerializeField]
-    private int endCapVertices = 5;
+    public float distanceFromCamera = 1f;
+    public GameObject line;
+    public GameObject cube;
+    public int cornerVertices = 5;
+    public int endCapVertices = 5;
 
     [Header ("For simplifying lines")]
-
-    [SerializeField]
-    private float tolerance = 2f;
-
-    [SerializeField]
-    private float deltaBetweenPoints = 0.03f;
+    public float tolerance = 2f;
+    public float deltaBetweenPoints = 0.03f;
 
     [Header ("For detecting button press")]
-    [SerializeField]
-    private GraphicRaycaster GraphicRaycaster;
+    public GraphicRaycaster GraphicRaycaster;
+    public EventSystem eventSystem;
+    public Camera arCamera;
+    public LineRenderer lineRenderer;
 
-    [SerializeField]
-    private EventSystem eventSystem;
+    public Color randomStartColor = Color.white;
+    public Color randomEndColor = Color.white;
 
-    [SerializeField]
-    private Camera arCamera;
-
-    private LineRenderer lineRenderer;
-
-    private Color randomStartColor = Color.white;
-    private Color randomEndColor = Color.white;
-
-    [SerializeField]
-    private float lineWidth = 0.0493f;
-
-    [SerializeField]
-    private Button clearButton;
-
-    [SerializeField]
-    private Button startButton;
-
-    [SerializeField]
-    private Button stopButton;
+    public float lineWidth = 0.0493f;
+    public Button clearButton;
 
     public Button searchButton;
     public Text searchingText;
 
     [SerializeField, Tooltip ("To specify a min constraint when drawing the next position")]
-    private float minPointPositionDistance = 1.0f;
+    public float minPointPositionDistance = 1.0f;
 
     // to show a point when user just draws a point, so index = 2
     int index = 2;
-    int sortingOrder = 2;
 
     private float timer = 0;
     private float timerTotal = 15.0f;
@@ -73,11 +44,13 @@ public class FollowLineController : MonoBehaviour {
     private float textTimerTotal = 5.0f;
 
     public GameObject nestSpawnerController;
+    public GameObject breadPrefab;
+    public InventoryScript invScript;
+
+    private int totalBreads = 4;
 
     void Start () {
         clearButton.onClick.AddListener (ClearLines);
-        startButton.onClick.AddListener (StartLine);
-        stopButton.onClick.AddListener (StopLine);
         searchButton.onClick.AddListener (StartSearch);
 
         line.SetActive (false);
@@ -165,9 +138,9 @@ public class FollowLineController : MonoBehaviour {
     private void StopLine () {
         index = 2;
         int numVertices = lineRenderer.positionCount;
-        Debug.Log (numVertices);
         Vector3 middlePosition = lineRenderer.GetPosition (numVertices / 2);
-        Instantiate (cube, middlePosition, Quaternion.identity);
+        middlePosition.y = -0.5f;
+        // Instantiate (cube, middlePosition, Quaternion.identity);
         nestSpawnerController.GetComponent<NestSpawner> ().SpawnBird (middlePosition);
         lineRenderer = null;
     }
@@ -176,5 +149,24 @@ public class FollowLineController : MonoBehaviour {
         searching = true;
         searchingText.text = "Searching...";
         StartLine ();
+
+        System.Random rand = new System.Random ();
+        for (int i = 0; i < totalBreads; i++) {
+            SpawnBreads (rand);
+        }
+    }
+
+    private void SpawnBreads (System.Random rand) {
+        Vector3 playerPosition = arCamera.transform.position;
+
+        float randX = (float) (rand.NextDouble () * 2);
+        float randZ = (float) (rand.NextDouble () * 2);
+        Vector3 newPosition = playerPosition + new Vector3 (rand.Next (2) == 1 ? randX : -randX, -0.2f, randZ);
+
+        GameObject newBread = Instantiate (breadPrefab, newPosition, Quaternion.identity);
+        BreadScript bs = newBread.GetComponent<BreadScript> ();
+        bs.arCamera = arCamera;
+        bs.invScript = invScript;
+        bs.owned = false;
     }
 }
