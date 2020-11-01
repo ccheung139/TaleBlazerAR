@@ -9,12 +9,16 @@ public class InventoryScript : MonoBehaviour {
     public Button inventoryButton;
     public Button breadButton;
     public Text breadButtonText;
+    public Text toastText;
     public GameObject breadOwnedPrefab;
     public Camera arCamera;
     public Button cancelButton;
     public Text actionText;
+    public GameObject magnet;
+    public Button magnetButton;
 
     public Button exitInventoryButton;
+    public int toastsCollected = 0;
     public int breadsCollected = 0;
 
     public bool holdingBread = false;
@@ -29,7 +33,9 @@ public class InventoryScript : MonoBehaviour {
         inventoryButton.onClick.AddListener (EnableInventory);
         exitInventoryButton.onClick.AddListener (DisableInventory);
         breadButtonText.text = breadsCollected.ToString ();
+        toastText.text = toastsCollected.ToString ();
         breadButton.onClick.AddListener (SpawnBread);
+        magnetButton.onClick.AddListener (EnableMagnet);
     }
 
     void Update () {
@@ -52,14 +58,44 @@ public class InventoryScript : MonoBehaviour {
         inventoryCanvas.enabled = false;
     }
 
+    public void AddToast () {
+        toastsCollected += 1;
+        toastText.text = toastsCollected.ToString ();
+
+        breadsCollected = toastsCollected / 3;
+        breadButtonText.text = breadsCollected.ToString ();
+    }
+
     public void AddBread () {
+        toastsCollected += 3;
+        toastText.text = toastsCollected.ToString ();
+
         breadsCollected += 1;
         breadButtonText.text = breadsCollected.ToString ();
     }
 
     public void SubtractBread () {
+        toastsCollected -= 3;
+        toastText.text = toastsCollected.ToString ();
+
         breadsCollected -= 1;
         breadButtonText.text = breadsCollected.ToString ();
+    }
+
+    private void DisableActions () {
+        magnet.SetActive (false);
+        if (holdingBread) {
+            holdingBread = false;
+            Destroy (activeBread);
+            AddBread ();
+        }
+    }
+
+    private void EnableMagnet () {
+        DisableActions ();
+        magnet.SetActive (true);
+        DisableInventory ();
+        cancelButton.gameObject.SetActive (true);
     }
 
     private void SpawnBread () {
@@ -83,8 +119,6 @@ public class InventoryScript : MonoBehaviour {
 
     private void CancelBreadAction () {
         cancelButton.gameObject.SetActive (false);
-        holdingBread = false;
-        Destroy (activeBread);
-        AddBread ();
+        DisableActions ();
     }
 }

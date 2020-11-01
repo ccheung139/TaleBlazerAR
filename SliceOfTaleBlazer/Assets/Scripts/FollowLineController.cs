@@ -36,18 +36,26 @@ public class FollowLineController : MonoBehaviour {
 
     // to show a point when user just draws a point, so index = 2
     int index = 2;
+    private System.Random rand;
 
     private float timer = 0;
     private float timerTotal = 15.0f;
     private bool searching = false;
     private float textTimer = 10f;
     private float textTimerTotal = 5.0f;
+    private float poopTimer = 0;
+    private float poopTimerTotal = 7.0f;
+    private int poopsSpawned = 0;
+    private int poopPerBirdLimit = 5;
 
     public GameObject nestSpawnerController;
-    public GameObject breadPrefab;
+    public GameObject toastPrefab;
+    public GameObject poopPrefab;
     public InventoryScript invScript;
+    public GameObject mousePrefab;
 
     private int totalBreads = 4;
+    public int poopsSeen = 0;
 
     void Start () {
         clearButton.onClick.AddListener (ClearLines);
@@ -58,15 +66,8 @@ public class FollowLineController : MonoBehaviour {
 
     void Update () {
         if (searching) {
-            if (timer >= timerTotal) {
-                searching = false;
-                searchingText.text = "A bird was found!";
-                textTimer = 0;
-                timer = 0;
-                StopLine ();
-            } else {
-                timer += Time.deltaTime * 1.0f;
-            }
+            HandleSearch ();
+            HandlePoop ();
         }
 
         if (searchingText.text == "A bird was found!") {
@@ -139,7 +140,7 @@ public class FollowLineController : MonoBehaviour {
         index = 2;
         int numVertices = lineRenderer.positionCount;
         Vector3 middlePosition = lineRenderer.GetPosition (numVertices / 2);
-        middlePosition.y = -0.5f;
+        middlePosition.y = -.7f;
         // Instantiate (cube, middlePosition, Quaternion.identity);
         nestSpawnerController.GetComponent<NestSpawner> ().SpawnBird (middlePosition);
         lineRenderer = null;
@@ -148,25 +149,68 @@ public class FollowLineController : MonoBehaviour {
     private void StartSearch () {
         searching = true;
         searchingText.text = "Searching...";
+        poopTimer = 0;
         StartLine ();
 
-        System.Random rand = new System.Random ();
+        rand = new System.Random ();
         for (int i = 0; i < totalBreads; i++) {
-            SpawnBreads (rand);
+            SpawnToasts ();
         }
     }
 
-    private void SpawnBreads (System.Random rand) {
+    private void SpawnToasts () {
         Vector3 playerPosition = arCamera.transform.position;
 
         float randX = (float) (rand.NextDouble () * 2);
         float randZ = (float) (rand.NextDouble () * 2);
         Vector3 newPosition = playerPosition + new Vector3 (rand.Next (2) == 1 ? randX : -randX, -0.2f, randZ);
 
-        GameObject newBread = Instantiate (breadPrefab, newPosition, Quaternion.identity);
-        BreadScript bs = newBread.GetComponent<BreadScript> ();
+        GameObject newToast = Instantiate (toastPrefab, newPosition, Quaternion.identity);
+        BreadScript bs = newToast.GetComponent<BreadScript> ();
         bs.arCamera = arCamera;
         bs.invScript = invScript;
         bs.owned = false;
+        bs.searchingText = searchingText;
+        GameObject newMouse = Instantiate (mousePrefab, newPosition, Quaternion.identity);
+        newMouse.SetActive (false);
+        bs.mouse = newMouse;
+    }
+
+    private void HandlePoop () {
+        if (poopTimer >= poopTimerTotal) {
+            if (poopsSpawned < poopPerBirdLimit) {
+                SpawnPoop ();
+                poopsSpawned += 1;
+            }
+            poopTimer = 0;
+        } else {
+            poopTimer += Time.deltaTime * 1.0f;
+        }
+    }
+
+    private void SpawnPoop () {
+        Vector3 playerPosition = arCamera.transform.position;
+        Vector3 poopPosition = playerPosition + arCamera.transform.forward * 0.5f;
+        poopPosition.y = -.7f;
+        GameObject newPoop = Instantiate (poopPrefab, poopPosition, Quaternion.identity);
+        PoopScript ps = newPoop.GetComponent<PoopScript> ();
+        ps.arCamera = arCamera;
+        ps.flc = this;
+        ps.searchingText = searchingText;
+    }
+
+    private void HandleSearch () {
+        if (timer >= timerTotal) {
+            if (poopsSeen >= 2) {
+                searching = false;
+                searchingText.text = "A bird was found!";
+                textTimer = 0;
+                timer = 0;
+                poopsSeen = 0;
+                StopLine ();
+            }
+        } else {
+            timer += Time.deltaTime * 1.0f;
+        }
     }
 }
