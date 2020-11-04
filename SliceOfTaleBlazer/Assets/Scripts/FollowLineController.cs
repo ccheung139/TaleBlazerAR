@@ -206,6 +206,7 @@ public class FollowLineController : MonoBehaviour {
                 searchingText.text = "A bird was found!";
                 textTimer = 0;
                 timer = 0;
+                poopsSpawned = 0;
                 poopsSeen = 0;
                 StopLine ();
             }

@@ -13,7 +13,8 @@ public class PoopScript : MonoBehaviour {
     // Update is called once per frame
     void Update () {
         if (!seen) {
-            if (Vector3.Distance (arCamera.transform.position, transform.position) <= .2f) {
+            if (Vector3.Distance (arCamera.transform.position, transform.position) <= .5f &&
+                GetComponent<Renderer> ().IsVisibleFrom (arCamera)) {
                 flc.poopsSeen += 1;
                 seen = true;
                 searchingText.text = "You found bird litter! Look for more clues.";
