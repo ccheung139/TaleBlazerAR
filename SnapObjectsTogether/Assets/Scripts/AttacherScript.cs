@@ -20,16 +20,19 @@ public class AttacherScript : MonoBehaviour {
     public GameObject spherePrefab;
     public GameObject cylinderPrefab;
     public Text resultText;
+    public Material blueMaterial;
+    public Material grayMaterial;
 
     private ARRaycastManager arRaycastManager;
     private static List<ARRaycastHit> hits = new List<ARRaycastHit> ();
     private List<List<GameObject>> shapeSets = new List<List<GameObject>> ();
 
-    private bool placingCube = false;
-    private bool placingSphere = false;
-    private bool placingCylinder = false;
+    public bool placingCube = false;
+    public bool placingSphere = false;
+    public bool placingCylinder = false;
     private bool inventoryCheck = false;
     private Vector3 normalOfHit;
+    private GameObject selectedShape;
 
     private float textTimer = 0.0f;
     private float textTimerTotal = 3.0f;
@@ -63,17 +66,28 @@ public class AttacherScript : MonoBehaviour {
     private void TouchOccurred (Touch touch) {
         Ray ray = arCamera.ScreenPointToRay (touch.position);
         RaycastHit hitObject;
-        if (Physics.Raycast (ray, out hitObject)) {
-            GameObject obj = hitObject.transform.gameObject;
-            if (inventoryCheck) {
-                FindItemsInSet (obj);
-                inventoryCheck = false;
+
+        if (placingCube || placingSphere || placingCylinder) {
+            if (Physics.Raycast (ray, out hitObject)) {
+                GameObject obj = hitObject.transform.gameObject;
+                if (inventoryCheck) {
+                    FindItemsInSet (obj);
+                    inventoryCheck = false;
+                } else {
+                    PlaceSecondaryObject (touch, obj, hitObject);
+                }
             } else {
-                PlaceSecondaryObject (touch, obj, hitObject);
+                PlaceInitialObject (touch);
             }
         } else {
-            PlaceInitialObject (touch);
+            if (Physics.Raycast (ray, out hitObject)) {
+                GameObject obj = hitObject.transform.gameObject;
+                SelectShape (obj);
+            } else {
+                DeselectShape ();
+            }
         }
+
     }
 
     private void PlaceSecondaryObject (Touch touch, GameObject obj, RaycastHit hit) {
@@ -168,6 +182,25 @@ public class AttacherScript : MonoBehaviour {
             List<GameObject> newShapeSet = new List<GameObject> ();
             newShapeSet.Add (newObject);
             shapeSets.Add (newShapeSet);
+        }
+    }
+
+    private void SelectShape (GameObject obj) {
+        DeselectShape ();
+
+        Renderer renderer = obj.GetComponent<Renderer> ();
+        if (obj.GetComponent<Renderer> ().sharedMaterial == grayMaterial) {
+            obj.GetComponent<Renderer> ().sharedMaterial = blueMaterial;
+            selectedShape = obj;
+        } else {
+            obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            selectedShape = null;
+        }
+    }
+
+    private void DeselectShape () {
+        if (selectedShape != null) {
+            selectedShape.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         }
     }
 
