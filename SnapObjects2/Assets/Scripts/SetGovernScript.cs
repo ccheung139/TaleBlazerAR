@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class SetGovernScript : MonoBehaviour {
+    public Material grayMaterial;
     public List<List<GameObject>> shapeSets = new List<List<GameObject>> ();
 
     public void AddToFormerSet (GameObject previousObject, GameObject newObject) {

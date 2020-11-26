@@ -15,6 +15,7 @@ public class MoveScript : MonoBehaviour {
     private Transform cylinderParent;
     private bool isMoving = false;
     private List<GameObject> seenObjects = new List<GameObject> ();
+    private List<GameObject> seenObjectsMultiple = new List<GameObject> ();
 
     void Start () {
         moveButton.onClick.AddListener (PressedMove);
@@ -24,8 +25,6 @@ public class MoveScript : MonoBehaviour {
     private void PressedMove () {
         GameObject selected = selectObjectsScript.selectedShape;
         List<GameObject> selectedObjects = selectObjectsScript.finalSelected;
-        Debug.Log (selected);
-        Debug.Log (selectedObjects.Count);
         if (selected != null && selectedObjects.Count == 0) {
             MoveOneObject (selected);
         } else if (selected == null && selectedObjects.Count != 0) {
@@ -63,7 +62,6 @@ public class MoveScript : MonoBehaviour {
         }
         GameObject selected = selectObjectsScript.selectedShape;
         List<GameObject> selectedObjects = selectObjectsScript.finalSelected;
-        Debug.Log (selectedObjects);
         if (selected == null && selectedObjects.Count == 0) {
             isMoving = false;
             return;
@@ -72,6 +70,7 @@ public class MoveScript : MonoBehaviour {
             DFSFindAttachedObjects (selected);
         } else if (selected == null && selectedObjects.Count != 0) {
             FinishMovementMultiple (selectedObjects);
+            DFSMultipleFindAttached (selectedObjects);
         }
         isMoving = false;
         finishButton.gameObject.SetActive (false);
@@ -93,6 +92,38 @@ public class MoveScript : MonoBehaviour {
             FinishMovementOneObject (selected);
         }
         selectObjectsScript.DeselectGroup ();
+    }
+
+    private void DFSMultipleFindAttached (List<GameObject> selectedObjects) {
+        List<List<GameObject>> newSets = new List<List<GameObject>> ();
+        foreach (GameObject selectedObj in selectedObjects) {
+            List<GameObject> newSet = new List<GameObject> ();
+            newSet = DFSMultipleHelper (selectedObj, newSet);
+            newSets.Add (newSet);
+        }
+        if (selectedObjects.Count != 0) {
+            DetachSetsMultiple (newSets, selectedObjects);
+        }
+    }
+
+    private List<GameObject> DFSMultipleHelper (GameObject selectedObj, List<GameObject> newSet) {
+        if (selectedObj == null || seenObjectsMultiple.Contains (selectedObj) || CheckPlacer (selectedObj)) {
+            return newSet;
+        }
+        seenObjectsMultiple.Add (selectedObj);
+        newSet.Add (selectedObj);
+        if (selectedObj.name == "Cylinder") {
+            CylinderColliderScript ccs = selectedObj.GetComponent<CylinderColliderScript> ();
+            foreach (GameObject newObj in ccs.collidingObjects) {
+                newSet = DFSMultipleHelper (newObj, newSet);
+            }
+        } else {
+            ColliderScript cs = selectedObj.GetComponent<ColliderScript> ();
+            foreach (GameObject newObj in cs.collidingObjects) {
+                newSet = DFSMultipleHelper (newObj, newSet);
+            }
+        }
+        return newSet;
     }
 
     private void DFSFindAttachedObjects (GameObject selected) {
@@ -134,6 +165,34 @@ public class MoveScript : MonoBehaviour {
             }
         }
         return 0;
+    }
+
+    public void DetachSetsMultiple (List<List<GameObject>> newSets, List<GameObject> selectedObjects) {
+        List<List<GameObject>> newComplementarySets = new List<List<GameObject>> ();
+        List<List<GameObject>> oldSets = new List<List<GameObject>> ();
+        foreach (GameObject selectedObj in selectedObjects) {
+            foreach (List<GameObject> potentialList in setGovernScript.shapeSets) {
+                if (potentialList.Contains (selectedObj)) {
+                    List<GameObject> unselectedObjects = new List<GameObject> ();
+                    foreach (GameObject obj in potentialList) {
+                        if (!selectedObjects.Contains (obj)) {
+                            unselectedObjects.Add (obj);
+                        }
+                    }
+                    newComplementarySets.Add (unselectedObjects);
+                    oldSets.Add (potentialList);
+                }
+            }
+        }
+        foreach (List<GameObject> oldSet in oldSets) {
+            setGovernScript.shapeSets.Remove (oldSet);
+        }
+        foreach (List<GameObject> newSet in newSets) {
+            setGovernScript.shapeSets.Add (newSet);
+        }
+        foreach (List<GameObject> newComplementarySet in newComplementarySets) {
+            setGovernScript.shapeSets.Add (newComplementarySet);
+        }
     }
 
     public void DetachSets (GameObject selected, List<GameObject> newSelectedList) {

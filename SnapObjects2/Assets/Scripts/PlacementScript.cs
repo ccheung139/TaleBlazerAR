@@ -15,7 +15,7 @@ public class PlacementScript : MonoBehaviour {
     public Button placeCylinderButton;
     public Button placeButton;
     public Button wholeButton;
-    
+
     public GameObject cubePrefab;
     public GameObject spherePrefab;
     public GameObject cylinderPrefab;
@@ -27,16 +27,18 @@ public class PlacementScript : MonoBehaviour {
     public CancelScript cancelScript;
     public SetGovernScript setGovernScript;
     public AttachScript attachScript;
+    public EditScript editScript;
 
     public Material blueMaterial;
     public Material grayMaterial;
     public Material yellowMaterial;
-    
+
     public GameObject preliminaryObject;
     private GameObject objectPlacingOn;
     public List<GameObject> allSelects = new List<GameObject> ();
     private ARRaycastManager arRaycastManager;
     private static List<ARRaycastHit> hits = new List<ARRaycastHit> ();
+    private float closenessFactor = 0.04995f;
 
     void Start () {
         placeCubeButton.onClick.AddListener (PressedPlaceCube);
@@ -57,6 +59,9 @@ public class PlacementScript : MonoBehaviour {
 #if UNITY_EDITOR
 
         KeyBoardMovement ();
+        if (editScript.editOn) {
+            return;
+        }
         if (Input.GetMouseButtonDown (0)) {
             if (EventSystem.current.currentSelectedGameObject != null) {
                 return;
@@ -65,6 +70,9 @@ public class PlacementScript : MonoBehaviour {
         }
 
 #else
+        if (editScript.editOn) {
+            return;
+        }
         if (Input.touchCount == 0) {
             return;
         }
@@ -131,18 +139,21 @@ public class PlacementScript : MonoBehaviour {
 
     private void PressedPlaceCube () {
         cancelScript.DisableAllPlacers ();
+        cubePlacer.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         cubePlacer.SetActive (true);
         placeButton.gameObject.SetActive (true);
     }
 
     private void PressedPlaceSphere () {
         cancelScript.DisableAllPlacers ();
+        spherePlacer.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         spherePlacer.SetActive (true);
         placeButton.gameObject.SetActive (true);
     }
 
     private void PressedPlaceCylinder () {
         cancelScript.DisableAllPlacers ();
+        cylinderPlacer.transform.Find ("CylinderPlaced").gameObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         cylinderPlacer.SetActive (true);
         placeButton.gameObject.SetActive (true);
     }
@@ -189,13 +200,15 @@ public class PlacementScript : MonoBehaviour {
             newShapeSet.Add (newObject);
             setGovernScript.shapeSets.Add (newShapeSet);
         } else if (preliminaryObject != null) {
-            bool validPlacement = CheckPreliminaryPlacement ();
+            bool validPlacement = CheckPreliminaryPlacement (preliminaryObject);
             if (!validPlacement) {
                 cancelScript.DisableAllPlacers (false);
                 return;
             }
             preliminaryObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            objectPlacingOn.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
             preliminaryObject = null;
+            objectPlacingOn = null;
             if (allSelects.Count != 0) {
                 cancelScript.DeselectAssociatedShapes ();
             } else {
@@ -205,17 +218,18 @@ public class PlacementScript : MonoBehaviour {
         cancelScript.DisableAllPlacers (true);
     }
 
-    private bool CheckPreliminaryPlacement () {
-        CylinderColliderScript ccs;
-        ColliderScript cs;
-        if (objectPlacingOn.name == "Cylinder") {
-            ccs = objectPlacingOn.GetComponent<CylinderColliderScript> ();
-            cs = preliminaryObject.GetComponent<ColliderScript> ();
-            return (cs.collidingObjects.Contains (objectPlacingOn) && ccs.collidingObjects.Contains (preliminaryObject));
+    private bool CheckPreliminaryPlacement (GameObject newObject) {
+        List<GameObject> newObjectColliding = GetCollidingObjects (newObject);
+        List<GameObject> objectPlacingColliding = GetCollidingObjects (objectPlacingOn);
+
+        return newObjectColliding.Contains (objectPlacingOn) && objectPlacingColliding.Contains (newObject);
+    }
+
+    private List<GameObject> GetCollidingObjects (GameObject obj) {
+        if (obj.name == "Cylinder") {
+            return obj.GetComponent<CylinderColliderScript> ().collidingObjects;
         } else {
-            ccs = preliminaryObject.GetComponent<CylinderColliderScript> ();
-            cs = objectPlacingOn.GetComponent<ColliderScript> ();
-            return (ccs.collidingObjects.Contains (objectPlacingOn) && cs.collidingObjects.Contains (preliminaryObject));
+            return obj.GetComponent<ColliderScript> ().collidingObjects;
         }
     }
 
@@ -270,23 +284,23 @@ public class PlacementScript : MonoBehaviour {
         return maxVal;
     }
 
-    
     private void InstantiateBlock (GameObject obj, GameObject prefab, RaycastHit hit) {
-        if (obj.name != "Cylinder") {
-            return;
-        }
-        CylinderColliderScript cs = obj.GetComponent<CylinderColliderScript> ();
-
         GameObject newObject;
-        if (cs.topNeighbor == null) {
-            Transform topOfCylinder = obj.transform.Find ("TopOfCylinder");
-            newObject = Instantiate (prefab, topOfCylinder.position, Quaternion.identity);
-        } else if (cs.bottomNeighbor == null) {
-            Transform bottomOfCylinder = obj.transform.Find ("BottomOfCylinder");
-            newObject = Instantiate (prefab, bottomOfCylinder.position, Quaternion.identity);
+        if (obj.name == "Cylinder") {
+            CylinderColliderScript cs = obj.GetComponent<CylinderColliderScript> ();
+            if (cs.topNeighbor == null) {
+                Transform topOfCylinder = obj.transform.Find ("TopOfCylinder");
+                newObject = Instantiate (prefab, topOfCylinder.position, Quaternion.identity);
+            } else if (cs.bottomNeighbor == null) {
+                Transform bottomOfCylinder = obj.transform.Find ("BottomOfCylinder");
+                newObject = Instantiate (prefab, bottomOfCylinder.position, Quaternion.identity);
+            } else {
+                Debug.Log ("all spaces taken up!");
+                return;
+            }
         } else {
-            Debug.Log ("all spaces taken up!");
-            return;
+            Vector3 newPoint = hit.point + (closenessFactor * hit.normal);
+            newObject = Instantiate (prefab, newPoint, Quaternion.identity);
         }
 
         newObject.transform.rotation = obj.transform.rotation;

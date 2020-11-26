@@ -62,6 +62,7 @@ public class DrawSelectScript : MonoBehaviour {
         selectObjectsScript.DeselectGroup ();
         firstPoint = arCamera.transform.position + (arCamera.transform.forward * 0.5f);
         isDrawing = true;
+        drawFinishButton.gameObject.SetActive (true);
     }
 
     private void DrawFinished () {
@@ -71,6 +72,7 @@ public class DrawSelectScript : MonoBehaviour {
         CalcPositons (endPoint);
         DrawBox ();
         selectObjectsScript.SelectInBox (v3Center, v3Extents, true);
+        drawFinishButton.gameObject.SetActive (false);
     }
 
     void CalcPositons (Vector3 endPoint) {
