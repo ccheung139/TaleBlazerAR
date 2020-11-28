@@ -26,8 +26,8 @@ public class CancelScript : MonoBehaviour {
     }
 
     public void DisableAllPlacers (bool preliminary = false) {
-        if (selectObjectsScript.selectedShape != null) {
-            selectObjectsScript.DeselectShape ();
+        if (selectObjectsScript.selectedShapes.Count > 0) {
+            selectObjectsScript.DeselectShapes ();
             DeselectAssociatedShapes ();
         }
         spherePlacer.SetActive (false);

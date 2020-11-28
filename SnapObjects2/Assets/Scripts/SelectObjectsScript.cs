@@ -12,6 +12,7 @@ public class SelectObjectsScript : MonoBehaviour {
     public Material blueMaterial;
     public Material grayMaterial;
 
+    public List<GameObject> selectedShapes = new List<GameObject> ();
     public List<GameObject> finalSelected = new List<GameObject> ();
     private List<GameObject> previousSelected = new List<GameObject> ();
     private Vector3 previousCenter;
@@ -21,23 +22,26 @@ public class SelectObjectsScript : MonoBehaviour {
         if (cubePlacer.activeSelf || spherePlacer.activeSelf || cylinderPlacer.activeSelf || ps.preliminaryObject != null) {
             return;
         }
-        DeselectShape ();
+        DeselectShapes ();
 
         Renderer renderer = obj.GetComponent<Renderer> ();
         if (obj.GetComponent<Renderer> ().sharedMaterial == grayMaterial) {
             obj.GetComponent<Renderer> ().sharedMaterial = blueMaterial;
-            selectedShape = obj;
+            selectedShapes.Add (obj);
+            // selectedShape = obj;
         } else {
             obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-            selectedShape = null;
+            selectedShapes = new List<GameObject> ();
+            // selectedShape = null;
         }
     }
 
-    public void DeselectShape () {
-        if (selectedShape != null) {
-            selectedShape.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-            selectedShape = null;
+    public void DeselectShapes () {
+        foreach (GameObject shape in selectedShapes) {
+            shape.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         }
+        previousSelected = new List<GameObject> ();
+        selectedShapes = new List<GameObject> ();
     }
 
     public void SelectInBox (Vector3 center, Vector3 scale, bool isFinished) {
@@ -60,7 +64,7 @@ public class SelectObjectsScript : MonoBehaviour {
         previousSelected = newSelected;
 
         if (isFinished) {
-            finalSelected = newSelected;
+            selectedShapes = newSelected;
         }
     }
 
@@ -75,7 +79,7 @@ public class SelectObjectsScript : MonoBehaviour {
             previousSelect.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         }
         previousSelected = new List<GameObject> ();
-        finalSelected = new List<GameObject> ();
+        selectedShapes = new List<GameObject> ();
     }
 
     private void CheckRemoved (List<GameObject> newSelected) {

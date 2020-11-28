@@ -23,15 +23,8 @@ public class MoveScript : MonoBehaviour {
     }
 
     private void PressedMove () {
-        GameObject selected = selectObjectsScript.selectedShape;
-        List<GameObject> selectedObjects = selectObjectsScript.finalSelected;
-        if (selected != null && selectedObjects.Count == 0) {
-            MoveOneObject (selected);
-        } else if (selected == null && selectedObjects.Count != 0) {
-            MoveMultipleObjects (selectedObjects);
-        } else {
-            return;
-        }
+        List<GameObject> selectedObjects = selectObjectsScript.selectedShapes;
+        MoveMultipleObjects (selectedObjects);
         StartMovements ();
     }
 
@@ -60,18 +53,15 @@ public class MoveScript : MonoBehaviour {
         if (!isMoving) {
             return;
         }
-        GameObject selected = selectObjectsScript.selectedShape;
-        List<GameObject> selectedObjects = selectObjectsScript.finalSelected;
-        if (selected == null && selectedObjects.Count == 0) {
+        List<GameObject> selectedObjects = selectObjectsScript.selectedShapes;
+        if (selectedObjects.Count == 0) {
             isMoving = false;
             return;
-        } else if (selected != null && selectedObjects.Count == 0) {
-            FinishMovementOneObject (selected);
-            DFSFindAttachedObjects (selected);
-        } else if (selected == null && selectedObjects.Count != 0) {
-            FinishMovementMultiple (selectedObjects);
-            DFSMultipleFindAttached (selectedObjects);
         }
+        FinishMovementMultiple (selectedObjects);
+        DFSMultipleFindAttached (selectedObjects);
+
+        seenObjectsMultiple = new List<GameObject> ();
         isMoving = false;
         finishButton.gameObject.SetActive (false);
         cancelScript.DeselectAssociatedShapes ();
@@ -91,7 +81,7 @@ public class MoveScript : MonoBehaviour {
         foreach (GameObject selected in multipleSelected) {
             FinishMovementOneObject (selected);
         }
-        selectObjectsScript.DeselectGroup ();
+        selectObjectsScript.DeselectShapes ();
     }
 
     private void DFSMultipleFindAttached (List<GameObject> selectedObjects) {
@@ -124,34 +114,6 @@ public class MoveScript : MonoBehaviour {
             }
         }
         return newSet;
-    }
-
-    private void DFSFindAttachedObjects (GameObject selected) {
-        DFSHelper (selected);
-        int foundCount = seenObjects.Count;
-        int setCount = FindSetCount (selected);
-        if (foundCount != setCount) {
-            DetachSets (selected, seenObjects);
-        }
-        seenObjects = new List<GameObject> ();
-    }
-
-    private void DFSHelper (GameObject nextObj) {
-        if (nextObj == null || seenObjects.Contains (nextObj) || CheckPlacer (nextObj)) {
-            return;
-        }
-        seenObjects.Add (nextObj);
-        if (nextObj.name == "Cylinder") {
-            CylinderColliderScript ccs = nextObj.GetComponent<CylinderColliderScript> ();
-            foreach (GameObject newObj in ccs.collidingObjects) {
-                DFSHelper (newObj);
-            }
-        } else {
-            ColliderScript cs = nextObj.GetComponent<ColliderScript> ();
-            foreach (GameObject newObj in cs.collidingObjects) {
-                DFSHelper (newObj);
-            }
-        }
     }
 
     private bool CheckPlacer (GameObject obj) {

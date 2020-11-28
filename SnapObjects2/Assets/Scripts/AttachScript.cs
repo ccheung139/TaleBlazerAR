@@ -23,36 +23,36 @@ public class AttachScript : MonoBehaviour {
 
     public void AttachObject () {
         attachOn = true;
-        previousAttachPosition = selectObjectsScript.selectedShape.transform.position;
-        previousAttachRotation = selectObjectsScript.selectedShape.transform.rotation;
+        previousAttachPosition = selectObjectsScript.selectedShapes[0].transform.position;
+        previousAttachRotation = selectObjectsScript.selectedShapes[0].transform.rotation;
     }
 
     public void HandleAttach (GameObject obj, RaycastHit hit) {
-        if (selectObjectsScript.selectedShape.name.Contains ("Cube") || selectObjectsScript.selectedShape.name.Contains ("Sphere")) {
+        if (selectObjectsScript.selectedShapes[0].name.Contains ("Cube") || selectObjectsScript.selectedShapes[0].name.Contains ("Sphere")) {
             CylinderColliderScript cs = obj.GetComponent<CylinderColliderScript> ();
             if (cs.topNeighbor == null) {
                 Transform topOfCylinder = obj.transform.Find ("TopOfCylinder");
-                selectObjectsScript.selectedShape.transform.position = topOfCylinder.position;
+                selectObjectsScript.selectedShapes[0].transform.position = topOfCylinder.position;
             } else if (cs.bottomNeighbor == null) {
                 Transform bottomOfCylinder = obj.transform.Find ("BottomOfCylinder");
-                selectObjectsScript.selectedShape.transform.position = bottomOfCylinder.position;
+                selectObjectsScript.selectedShapes[0].transform.position = bottomOfCylinder.position;
             } else {
                 Debug.Log ("all spaces taken up!");
                 return;
             }
 
-            selectObjectsScript.selectedShape.transform.rotation = obj.transform.rotation;
+            selectObjectsScript.selectedShapes[0].transform.rotation = obj.transform.rotation;
 
         } else {
-            GameObject parentCylinder = selectObjectsScript.selectedShape.transform.parent.gameObject;
+            GameObject parentCylinder = selectObjectsScript.selectedShapes[0].transform.parent.gameObject;
             parentCylinder.transform.position = hit.transform.position;
             parentCylinder.transform.rotation = Quaternion.FromToRotation (Vector3.up, hit.normal);
 
             Vector3 upVector = parentCylinder.transform.forward;
-            parentCylinder.transform.RotateAround (selectObjectsScript.selectedShape.transform.position, upVector, 180);
+            parentCylinder.transform.RotateAround (selectObjectsScript.selectedShapes[0].transform.position, upVector, 180);
         }
-        ps.preliminaryObject = selectObjectsScript.selectedShape;
-        selectObjectsScript.DeselectShape ();
+        ps.preliminaryObject = selectObjectsScript.selectedShapes[0];
+        selectObjectsScript.DeselectShapes ();
         ps.preliminaryObject.GetComponent<Renderer> ().sharedMaterial = yellowMaterial;
         cancelScript.DisableAllPlacers (true);
         placeButton.gameObject.SetActive (true);

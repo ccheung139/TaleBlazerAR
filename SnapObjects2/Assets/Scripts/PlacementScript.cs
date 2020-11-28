@@ -27,7 +27,8 @@ public class PlacementScript : MonoBehaviour {
     public CancelScript cancelScript;
     public SetGovernScript setGovernScript;
     public AttachScript attachScript;
-    public EditScript editScript;
+    public RotateScript rotateScript;
+    public ScaleScript scaleScript;
 
     public Material blueMaterial;
     public Material grayMaterial;
@@ -59,7 +60,7 @@ public class PlacementScript : MonoBehaviour {
 #if UNITY_EDITOR
 
         KeyBoardMovement ();
-        if (editScript.editOn) {
+        if (rotateScript.rotateOn || scaleScript.scaleOn) {
             return;
         }
         if (Input.GetMouseButtonDown (0)) {
@@ -70,7 +71,7 @@ public class PlacementScript : MonoBehaviour {
         }
 
 #else
-        if (editScript.editOn) {
+        if (rotateScript.rotateOn || scaleScript.scaleOn) {
             return;
         }
         if (Input.touchCount == 0) {
@@ -132,7 +133,7 @@ public class PlacementScript : MonoBehaviour {
                 GameObject obj = hitObject.transform.gameObject;
                 selectObjectsScript.SelectShape (obj);
             } else {
-                selectObjectsScript.DeselectShape ();
+                selectObjectsScript.DeselectShapes ();
             }
         }
     }
@@ -159,13 +160,13 @@ public class PlacementScript : MonoBehaviour {
     }
 
     private void WholePressed () {
-        if (selectObjectsScript.selectedShape) {
-            TurnAssociatedShapesYellow (selectObjectsScript.selectedShape);
+        if (selectObjectsScript.selectedShapes.Count == 1) {
+            TurnAssociatedShapesYellow (selectObjectsScript.selectedShapes[0]);
             foreach (GameObject obj in allSelects) {
-                if (selectObjectsScript.selectedShape.name == "Cylinder") {
-                    obj.transform.parent = selectObjectsScript.selectedShape.transform.parent;
+                if (selectObjectsScript.selectedShapes[0].name == "Cylinder") {
+                    obj.transform.parent = selectObjectsScript.selectedShapes[0].transform.parent;
                 } else {
-                    obj.transform.parent = selectObjectsScript.selectedShape.transform;
+                    obj.transform.parent = selectObjectsScript.selectedShapes[0].transform;
                 }
             }
         }

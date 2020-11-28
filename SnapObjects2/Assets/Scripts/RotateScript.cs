@@ -6,16 +6,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class EditScript : MonoBehaviour {
+public class RotateScript : MonoBehaviour {
     public SelectObjectsScript selectObjectsScript;
-    public Button editButton;
-    public Button dragButton;
+    public Button rotateButton;
     public Camera arCamera;
     public GameObject line1;
     public GameObject line2;
     public GameObject line3;
     public GameObject colliderObject;
-    public bool editOn = false;
+    public bool rotateOn = false;
 
     private float lineWidth = 0.005f;
     private int cornerVertices = 5;
@@ -31,11 +30,11 @@ public class EditScript : MonoBehaviour {
     private GameObject colliderTouchedObj;
 
     void Start () {
-        editButton.onClick.AddListener (PressedEdit);
+        rotateButton.onClick.AddListener (PressedRotate);
     }
 
     void Update () {
-        if (editOn) {
+        if (rotateOn) {
             if (colliderTouched) {
                 HandleRotate ();
             } else {
@@ -71,7 +70,7 @@ public class EditScript : MonoBehaviour {
 
     private void CalculateRelativeAngle () {
         Vector3 axis = colliderTouchedObj.GetComponent<LineRenderSphereScript> ().axis;
-        GameObject selected = selectObjectsScript.selectedShape;
+        GameObject selected = selectObjectsScript.selectedShapes[0];
         Quaternion initialRotation = selected.transform.rotation;
         Vector3 direction = arCamera.transform.position - selected.transform.position;
         if (axis == Vector3.up) {
@@ -96,7 +95,7 @@ public class EditScript : MonoBehaviour {
             return;
         }
         Vector3 axis = colliderTouchedObj.GetComponent<LineRenderSphereScript> ().axis;
-        GameObject selected = selectObjectsScript.selectedShape;
+        GameObject selected = selectObjectsScript.selectedShapes[0];
         Vector3 selectedPosition = selected.transform.position;
         Vector3 direction = arCamera.transform.position - selected.transform.position;
 
@@ -110,12 +109,12 @@ public class EditScript : MonoBehaviour {
 
         var newRotation = Quaternion.LookRotation (direction) * Quaternion.Euler (0, 0, 0);
         var finalRotation = newRotation * relative;
-        selected.transform.rotation = Quaternion.Slerp (selected.transform.rotation, finalRotation, Time.deltaTime * 1f);
+        selected.transform.rotation = Quaternion.Slerp (selected.transform.rotation, finalRotation, Time.deltaTime * 5f);
     }
 
-    private void PressedEdit () {
-        editOn = !editOn;
-        if (editOn) {
+    private void PressedRotate () {
+        rotateOn = !rotateOn;
+        if (rotateOn) {
             DrawLines ();
         } else {
             EraseLines ();
@@ -123,7 +122,7 @@ public class EditScript : MonoBehaviour {
     }
 
     private void DrawLines () {
-        GameObject selected = selectObjectsScript.selectedShape;
+        GameObject selected = selectObjectsScript.selectedShapes[0];
         List<GameObject> selectedObjects = selectObjectsScript.finalSelected;
 
         float radius = .1f;
@@ -188,136 +187,3 @@ public class EditScript : MonoBehaviour {
         currentLineRenderer.numCapVertices = endCapVertices;
     }
 }
-
-// private float CalculateTheta (Vector2 position2, Vector2 center, float radius = 0.1f) {
-//     float numerator = Vector2.Dot (position2, center);
-//     float denominator = position2.magnitude * center.magnitude;
-//     float inside = numerator / denominator;
-//     if (inside > 1.0f) {
-//         inside = 1.0f;
-//     } else if (inside < -1.0f) {
-//         inside = -1.0f;
-//     }
-//     float radians = Mathf.Acos (inside);
-//     float theta = radians * 180 / Mathf.PI;
-//     Debug.Log ("theta: " + theta);
-//     return theta;
-//     // return radius * theta;
-// }
-
-// if (axis == Vector3.up) {
-//     // Vector2 point1 = new Vector2 (lastPosition.x, lastPosition.z);
-//     Vector2 point2 = new Vector2 (thisPosition.x, thisPosition.z);
-//     Vector2 center = new Vector2 (initialPosition.x, initialPosition.z);
-//     newTheta = CalculateTheta (point2, center);
-
-// } else if (axis == Vector3.right) {
-//     // Vector2 point1 = new Vector2 (lastPosition.y, lastPosition.z);
-//     Vector2 point2 = new Vector2 (thisPosition.y, thisPosition.z);
-//     Vector2 center = new Vector2 (initialPosition.y, initialPosition.z);
-//     newTheta = CalculateTheta (point2, center);
-
-// } else {
-//     // Vector2 point1 = new Vector2 (lastPosition.x, lastPosition.y);
-//     Vector2 point2 = new Vector2 (thisPosition.x, thisPosition.y);
-//     Vector2 center = new Vector2 (initialPosition.x, initialPosition.y);
-//     newTheta = CalculateTheta (point2, center);
-// }
-// if (Single.IsNaN (newTheta)) {
-//     return;
-// }
-
-// delta = lastTheta - newTheta;
-// lastTheta = newTheta;
-
-// lastPosition = thisPosition;
-// if (selected.name == "Cylinder") {
-//     GameObject parent = selected.transform.parent.gameObject;
-//     Transform topOfCylinder = selected.transform.Find ("TopOfCylinder");
-//     parent.transform.RotateAround (topOfCylinder.position, axis, delta);
-
-// } else {
-//     selected.transform.RotateAround (selected.transform.position, axis, delta);
-// }
-
-// private void HandleRotateDrag () {
-//     if (isMouseDragging && colliderTouched) {
-//         float delta;
-//         Vector3 axis = colliderTouchedObj.GetComponent<LineRenderSphereScript> ().axis;
-//         if (axis == Vector3.up) {
-//             delta = -(currentX - Input.mousePosition.x) * 20000f;
-//             currentX = Input.mousePosition.x;
-//         } else if (axis == Vector3.forward) {
-
-//             delta = (currentY - Input.mousePosition.y) * 20000f;
-//         } else {
-//             delta = (currentY - Input.mousePosition.y) * 20000f;
-//             currentY = Input.mousePosition.y;
-//         }
-
-//         GameObject selected = selectObjectsScript.selectedShape;
-
-//         if (selected.name == "Cylinder") {
-//             GameObject parent = selected.transform.parent.gameObject;
-//             Transform topOfCylinder = selected.transform.Find ("TopOfCylinder");
-//             parent.transform.RotateAround (topOfCylinder.position, axis, delta * 360);
-
-//         } else {
-//             selected.transform.RotateAround (selected.transform.position, axis, delta * 360);
-//         }
-
-//     }
-// }
-
-// private void HandleClosestPoint () {
-//     if (!touchingLine) {
-//         CalculateClosestLinePoint ();
-//     }
-// }
-
-// private void CalculateClosestLinePoint () {
-//     ClosestHelper (xPoints);
-//     ClosestHelper (yPoints);
-//     ClosestHelper (zPoints);
-//     if (setMinDistance <= 0.1f) {
-//         dragButton.gameObject.SetActive (true);
-//         touchingLine = true;
-//     }
-// }
-
-// private void ClosestHelper (Vector3[] points) {
-//     foreach (Vector3 point in points) {
-//         float distance = Vector3.Distance (point, arCamera.transform.position);
-//         if (distance < setMinDistance) {
-//             setMinDistance = distance;
-//             setMinPosition = point;
-//         }
-//     }
-// }
-
-// private float CalculateTheta (Vector2 position1, Vector2 position2, float radius = 0.1f) {
-//     float d = Vector2.Distance (position1, position2);
-//     float inside = 1 - (d * d) / (2 * radius * radius);
-//     Debug.Log ("inside: " + inside);
-//     float radians = Mathf.Acos (inside);
-//     float theta = radians * 180 / Mathf.PI;
-//     Debug.Log ("theta: " + theta);
-//     return theta;
-// }
-
-// private float CalculateArcLength (Vector2 position1, Vector2 position2, Vector2 center, float radius = 0.1f) {
-//     float theta1 = ArcLengthHelper (position1, radius);
-//     float theta2 = ArcLengthHelper (position2, radius);
-//     float thetaDiff = theta1 - theta2;
-//     return radius * thetaDiff;
-// }
-
-// private float ArcLengthHelper (Vector2 position, float radius = 0.1f) {
-//     // float theta = Mathf.Acos (position.x / radius);
-//     float z = Mathf.Sqrt (position.x * position.x + position.y * position.y);
-//     float d = Vector2.Distance (position, new Vector2 (z, 0));
-//     // Debug.Log (d);
-//     float inside = 1 - (d * d) / (2 * radius * radius);
-//     float theta = Mathf.Acos (inside);
-//     return theta;
-// }
