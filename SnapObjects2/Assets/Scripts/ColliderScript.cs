@@ -19,6 +19,9 @@ public class ColliderScript : MonoBehaviour {
     }
 
     void OnTriggerEnter (Collider col) {
+        if (col.gameObject.name.Contains ("ScaleSphere")) {
+            return;
+        }
         if (!collidingObjects.Contains (col.gameObject)) {
             collidingObjects.Add (col.gameObject);
         }
@@ -31,6 +34,9 @@ public class ColliderScript : MonoBehaviour {
     }
 
     void OnTriggerExit (Collider col) {
+        if (col.gameObject.name.Contains ("ScaleSphere")) {
+            return;
+        }
         if (collidingObjects.Contains (col.gameObject)) {
             collidingObjects.Remove (col.gameObject);
         }

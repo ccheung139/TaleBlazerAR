@@ -6,6 +6,7 @@ TagManager:
   tags:
   - LineAxis
   - Line
+  - Capsule
   layers:
   - Default
   - TransparentFX
