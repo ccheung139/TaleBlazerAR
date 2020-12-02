@@ -44,4 +44,13 @@ public class SetGovernScript : MonoBehaviour {
         firstList.AddRange (secondList);
         shapeSets.Add (firstList);
     }
+
+    public void RemoveObjectFromSet (GameObject obj) {
+        foreach (List<GameObject> potentialList in shapeSets) {
+            if (potentialList.Contains (obj)) {
+                potentialList.Remove (obj);
+                return;
+            }
+        }
+    }
 }

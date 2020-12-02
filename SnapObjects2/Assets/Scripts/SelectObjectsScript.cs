@@ -13,7 +13,6 @@ public class SelectObjectsScript : MonoBehaviour {
     public Material grayMaterial;
 
     public List<GameObject> selectedShapes = new List<GameObject> ();
-    public List<GameObject> finalSelected = new List<GameObject> ();
     private List<GameObject> previousSelected = new List<GameObject> ();
     private Vector3 previousCenter;
     private Vector3 previousScale;
@@ -40,8 +39,7 @@ public class SelectObjectsScript : MonoBehaviour {
         foreach (GameObject shape in selectedShapes) {
             shape.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         }
-        previousSelected = new List<GameObject> ();
-        selectedShapes = new List<GameObject> ();
+        Reset ();
     }
 
     public void SelectInBox (Vector3 center, Vector3 scale, bool isFinished) {
@@ -88,5 +86,10 @@ public class SelectObjectsScript : MonoBehaviour {
                 previousSelect.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
             }
         }
+    }
+
+    public void Reset () {
+        previousSelected = new List<GameObject> ();
+        selectedShapes = new List<GameObject> ();
     }
 }

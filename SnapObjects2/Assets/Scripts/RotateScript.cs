@@ -123,7 +123,6 @@ public class RotateScript : MonoBehaviour {
 
     private void DrawLines () {
         GameObject selected = selectObjectsScript.selectedShapes[0];
-        List<GameObject> selectedObjects = selectObjectsScript.finalSelected;
 
         float radius = .1f;
         var segments = 360;
