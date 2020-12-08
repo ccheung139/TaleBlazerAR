@@ -53,4 +53,28 @@ public class SetGovernScript : MonoBehaviour {
             }
         }
     }
+
+    public void CopyAddToSet (List<GameObject> copiedObjects) {
+        List<GameObject> seenObjects = new List<GameObject> ();
+        foreach(GameObject obj in copiedObjects) {
+            if (seenObjects.Contains(obj)) {
+                continue;
+            }
+            
+        }
+    }
+
+    // public void CopySetsFromGameObjects (List<GameObject> gameObjects) {
+    //     List<int> indicesToCopy = new List<int> ();
+    //     foreach (GameObject obj in gameObjects) {
+    //         for (int i = 0; i < shapeSets.Count; i++) {
+    //             List<GameObject> potentialList = shapeSets[i];
+    //             if (potentialList.Contains (obj)) {
+    //                 indicesToCopy.Add (i);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     List<List<GameObject>> foundSets = new List<List<GameObject>> ();
+    // }
 }

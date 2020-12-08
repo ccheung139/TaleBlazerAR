@@ -114,9 +114,16 @@ public class ScaleScript : MonoBehaviour {
 
         if (selected.name == "Cylinder") {
             GameObject parent = selected.transform.parent.gameObject;
-            parent.transform.localScale += scaleChange;
+            Vector3 scaleCopy = parent.transform.localScale + scaleChange * 3.0f;
+            if (scaleCopy.x > 0 && scaleCopy.y > 0 && scaleCopy.z > 0) {
+                parent.transform.localScale = scaleCopy;
+            }
+
         } else {
-            selected.transform.localScale += scaleChange;
+            Vector3 scaleCopy = selected.transform.localScale + scaleChange;
+            if (scaleCopy.x > 0 && scaleCopy.y > 0 && scaleCopy.z > 0) {
+                selected.transform.localScale = scaleCopy;
+            }
         }
         previousValue = newValue;
         UpdateScaleSpheres (selected);
@@ -138,6 +145,9 @@ public class ScaleScript : MonoBehaviour {
     }
 
     private void EnableCapsules () {
+        if (selectObjectsScript.selectedShapes.Count == 0) {
+            return;
+        }
         GameObject selected = selectObjectsScript.selectedShapes[0];
         UpdateScaleSpheres (selected);
 

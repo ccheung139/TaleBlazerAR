@@ -7,10 +7,12 @@ public class MoveScript : MonoBehaviour {
     public Button moveButton;
     public Button finishButton;
     public Camera arCamera;
-    public PlacementScript ps;
+    public PlacementScript placementScript;
     public SetGovernScript setGovernScript;
     public SelectObjectsScript selectObjectsScript;
     public CancelScript cancelScript;
+    public Material blueMaterial;
+    public Material yellowMaterial;
 
     private Transform cylinderParent;
     private bool isMoving = false;
@@ -21,6 +23,43 @@ public class MoveScript : MonoBehaviour {
         moveButton.onClick.AddListener (PressedMove);
         finishButton.onClick.AddListener (PressedFinish);
     }
+
+    // void Update () {
+    //     if (isMoving && selectObjectsScript.selectedShapes.Count > 0) {
+    //         bool isAttached = false;
+    //         GameObject movingObject = selectObjectsScript.selectedShapes[0];
+    //         if (movingObject.name.Contains ("Cylinder")) {
+    //             movingObject = movingObject.transform.parent.gameObject;
+    //         }
+    //         RaycastHit[] hits = Physics.RaycastAll (arCamera.transform.position - arCamera.transform.up * 0.1f, arCamera.transform.forward, 1.5f);
+    //         if (hits.Length > 0) {
+    //             foreach (RaycastHit hit in hits) {
+    //                 GameObject obj = hit.transform.gameObject;
+    //                 if (!selectObjectsScript.selectedShapes.Contains (obj) && !placementScript.allSelects.Contains (obj)) {
+    //                     float distance = Vector3.Distance (obj.transform.position, arCamera.transform.position);
+    //                     if (distance <= .6f) {
+    //                         movingObject.transform.position = hit.point;
+    //                         ChangeColor (movingObject, yellowMaterial);
+    //                         isAttached = true;
+    //                         break;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         if (!isAttached) {
+    //             ChangeColor (movingObject, blueMaterial);
+    //             movingObject.transform.position = arCamera.transform.position + arCamera.transform.forward * 0.3f - arCamera.transform.up * 0.1f;
+    //         }
+    //     }
+    // }
+
+    // private void ChangeColor (GameObject movingObject, Material newColor) {
+    //     GameObject toChange = movingObject;
+    //     if (movingObject.name.Contains ("CylinderParent")) {
+    //         toChange = movingObject.transform.Find ("Cylinder").gameObject;
+    //     }
+    //     toChange.GetComponent<Renderer> ().sharedMaterial = newColor;
+    // }
 
     private void PressedMove () {
         List<GameObject> selectedObjects = selectObjectsScript.selectedShapes;

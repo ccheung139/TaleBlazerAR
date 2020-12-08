@@ -18,13 +18,37 @@ public class AttachScript : MonoBehaviour {
     public Quaternion previousAttachRotation;
 
     void Start () {
-        attachButton.onClick.AddListener (AttachObject);
+        // attachButton.onClick.AddListener (AttachObject);
     }
 
     public void AttachObject () {
         attachOn = true;
         previousAttachPosition = selectObjectsScript.selectedShapes[0].transform.position;
         previousAttachRotation = selectObjectsScript.selectedShapes[0].transform.rotation;
+    }
+
+    // public void HandleAttach (GameObject obj, RaycastHit hit) {
+    //     if (obj.name.Contains ("Cylinder")) {
+    //         AttachToCylinder(obj);
+    //     } else {
+
+    //     }
+    // }
+
+    private void AttachToCylinder (GameObject obj) {
+        CylinderColliderScript cs = obj.GetComponent<CylinderColliderScript> ();
+        if (cs.topNeighbor == null) {
+            Transform topOfCylinder = obj.transform.Find ("TopOfCylinder");
+            selectObjectsScript.selectedShapes[0].transform.position = topOfCylinder.position;
+        } else if (cs.bottomNeighbor == null) {
+            Transform bottomOfCylinder = obj.transform.Find ("BottomOfCylinder");
+            selectObjectsScript.selectedShapes[0].transform.position = bottomOfCylinder.position;
+        } else {
+            Debug.Log ("all spaces taken up!");
+            return;
+        }
+
+        selectObjectsScript.selectedShapes[0].transform.rotation = obj.transform.rotation;
     }
 
     public void HandleAttach (GameObject obj, RaycastHit hit) {

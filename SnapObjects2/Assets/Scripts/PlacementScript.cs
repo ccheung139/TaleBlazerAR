@@ -163,6 +163,7 @@ public class PlacementScript : MonoBehaviour {
         if (selectObjectsScript.selectedShapes.Count == 1) {
             TurnAssociatedShapesYellow (selectObjectsScript.selectedShapes[0]);
             foreach (GameObject obj in allSelects) {
+                
                 if (selectObjectsScript.selectedShapes[0].name == "Cylinder") {
                     obj.transform.parent = selectObjectsScript.selectedShapes[0].transform.parent;
                 } else {
@@ -185,7 +186,7 @@ public class PlacementScript : MonoBehaviour {
                         }
                     }
                 }
-                return;
+                // return;
             }
         }
     }
