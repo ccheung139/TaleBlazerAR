@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class SetGovernScript : MonoBehaviour {
-    public Material grayMaterial;
     public List<List<GameObject>> shapeSets = new List<List<GameObject>> ();
 
     public void AddToFormerSet (GameObject previousObject, GameObject newObject) {
@@ -63,18 +62,4 @@ public class SetGovernScript : MonoBehaviour {
             
         }
     }
-
-    // public void CopySetsFromGameObjects (List<GameObject> gameObjects) {
-    //     List<int> indicesToCopy = new List<int> ();
-    //     foreach (GameObject obj in gameObjects) {
-    //         for (int i = 0; i < shapeSets.Count; i++) {
-    //             List<GameObject> potentialList = shapeSets[i];
-    //             if (potentialList.Contains (obj)) {
-    //                 indicesToCopy.Add (i);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     List<List<GameObject>> foundSets = new List<List<GameObject>> ();
-    // }
 }

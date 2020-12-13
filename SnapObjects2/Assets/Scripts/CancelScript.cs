@@ -39,27 +39,11 @@ public class CancelScript : MonoBehaviour {
             Destroy (ps.preliminaryObject);
             ps.preliminaryObject = null;
         }
-        if (attachScript.attachOn) {
-            if (!preliminary) {
-                if (ps.preliminaryObject.name == "Cylinder") {
-                    ps.preliminaryObject.transform.parent.transform.position = attachScript.previousAttachPosition;
-                    ps.preliminaryObject.transform.parent.transform.rotation = attachScript.previousAttachRotation;
-                } else {
-                    ps.preliminaryObject.transform.position = attachScript.previousAttachPosition;
-                    ps.preliminaryObject.transform.rotation = attachScript.previousAttachRotation;
-                }
-                DeselectAssociatedShapes ();
-            }
-        }
     }
 
     public void DeselectAssociatedShapes () {
         foreach (GameObject obj in ps.allSelects) {
-            if (obj.name.Contains ("CylinderParent")) {
-                obj.transform.Find ("Cylinder").GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-            } else {
-                obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-            }
+            obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
             obj.transform.parent = null;
         }
         ps.allSelects.Clear ();

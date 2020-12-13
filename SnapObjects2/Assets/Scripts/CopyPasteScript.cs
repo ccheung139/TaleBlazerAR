@@ -23,32 +23,18 @@ public class CopyPasteScript : MonoBehaviour {
         ResetCopied ();
         for (int i = 0; i < selectObjectsScript.selectedShapes.Count; i++) {
             GameObject selectedObj = selectObjectsScript.selectedShapes[i];
-            if (selectedObj.name == "Cylinder") {
-                GameObject parentObj = selectedObj.transform.parent.gameObject;
-                GameObject duplicate = Instantiate (parentObj, parentObj.transform.position, parentObj.transform.rotation, arCamera.transform);
-                duplicate.name = parentObj.name;
-                duplicate.SetActive (false);
-                copiedObjects.Add (duplicate.transform.Find ("Cylinder").gameObject);
-            } else {
-                GameObject duplicate = Instantiate (selectedObj, selectedObj.transform.position, selectedObj.transform.rotation, arCamera.transform);
-                duplicate.name = selectedObj.name;
-                duplicate.SetActive (false);
-                copiedObjects.Add (duplicate);
-            }
-
+            GameObject duplicate = Instantiate (selectedObj, selectedObj.transform.position, selectedObj.transform.rotation, arCamera.transform);
+            duplicate.name = selectedObj.name;
+            duplicate.SetActive (false);
+            copiedObjects.Add (duplicate);
         }
     }
 
     private void PastePressed () {
         foreach (GameObject obj in copiedObjects) {
-            if (obj.name == "Cylinder") {
-                obj.transform.parent.gameObject.SetActive (true);
-                obj.transform.parent.parent = null;
-            } else {
-                obj.SetActive (true);
-                obj.transform.parent = null;
-            }
-
+            obj.SetActive (true);
+            obj.transform.parent = null;
+            obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         }
         DFSMultipleFindAttached ();
         DisassembleChildren ();
@@ -56,32 +42,18 @@ public class CopyPasteScript : MonoBehaviour {
 
     private void DisassembleChildren () {
         foreach (GameObject obj in copiedObjects) {
-            if (obj.name == "Cylinder") {
-                foreach (Transform child in obj.transform.parent) {
-                    if (child.gameObject.name.Contains ("Cube") ||
-                        child.gameObject.name.Contains ("Sphere")) {
-                        child.gameObject.transform.parent = null;
-                        child.gameObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-                    } else if (child.gameObject.name.Contains ("CylinderParent")) {
-                        child.gameObject.transform.parent = null;
-                        child.Find ("Cylinder").gameObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-                    }
+            List<GameObject> objectsToDissasemble = new List<GameObject> ();
+            foreach (Transform child in obj.transform) {
+                if (child.gameObject.name == "Cube(Clone)" ||
+                    child.gameObject.name == "Sphere(Clone)" || child.gameObject.name == "Cylinder") {
+                    objectsToDissasemble.Add (child.gameObject);
                 }
-                obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-            } else {
-                foreach (Transform child in obj.transform) {
-                    if (child.gameObject.name.Contains ("Cube") ||
-                        child.gameObject.name.Contains ("Sphere")) {
-                        child.gameObject.transform.parent = null;
-                        child.gameObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-                    } else if (child.gameObject.name.Contains ("CylinderParent")) {
-                        child.gameObject.transform.parent = null;
-                        child.Find ("Cylinder").gameObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-                    }
-                }
-                obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
             }
-
+            foreach (GameObject objToDissasemble in objectsToDissasemble) {
+                objToDissasemble.transform.parent = null;
+                objToDissasemble.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            }
+            obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         }
     }
 

@@ -112,18 +112,9 @@ public class ScaleScript : MonoBehaviour {
             scaleChange = new Vector3 (0, 0, delta);
         }
 
-        if (selected.name == "Cylinder") {
-            GameObject parent = selected.transform.parent.gameObject;
-            Vector3 scaleCopy = parent.transform.localScale + scaleChange * 3.0f;
-            if (scaleCopy.x > 0 && scaleCopy.y > 0 && scaleCopy.z > 0) {
-                parent.transform.localScale = scaleCopy;
-            }
-
-        } else {
-            Vector3 scaleCopy = selected.transform.localScale + scaleChange;
-            if (scaleCopy.x > 0 && scaleCopy.y > 0 && scaleCopy.z > 0) {
-                selected.transform.localScale = scaleCopy;
-            }
+        Vector3 scaleCopy = selected.transform.localScale + scaleChange;
+        if (scaleCopy.x > 0 && scaleCopy.y > 0 && scaleCopy.z > 0) {
+            selected.transform.localScale = scaleCopy;
         }
         previousValue = newValue;
         UpdateScaleSpheres (selected);

@@ -163,12 +163,9 @@ public class PlacementScript : MonoBehaviour {
         if (selectObjectsScript.selectedShapes.Count == 1) {
             TurnAssociatedShapesYellow (selectObjectsScript.selectedShapes[0]);
             foreach (GameObject obj in allSelects) {
-                
-                if (selectObjectsScript.selectedShapes[0].name == "Cylinder") {
-                    obj.transform.parent = selectObjectsScript.selectedShapes[0].transform.parent;
-                } else {
-                    obj.transform.parent = selectObjectsScript.selectedShapes[0].transform;
-                }
+                Vector3 oldScale = obj.transform.localScale;
+                obj.transform.parent = selectObjectsScript.selectedShapes[0].transform;
+                // obj.transform.localScale = oldScale;
             }
         }
     }
@@ -179,11 +176,7 @@ public class PlacementScript : MonoBehaviour {
                 foreach (GameObject associatedObj in potentialList) {
                     if (associatedObj != obj) {
                         associatedObj.GetComponent<Renderer> ().sharedMaterial = yellowMaterial;
-                        if (associatedObj.name == "Cylinder") {
-                            allSelects.Add (associatedObj.transform.parent.gameObject);
-                        } else {
-                            allSelects.Add (associatedObj);
-                        }
+                        allSelects.Add (associatedObj);
                     }
                 }
                 // return;
@@ -195,11 +188,20 @@ public class PlacementScript : MonoBehaviour {
         List<GameObject> newShapeSet = new List<GameObject> ();
         if (cubePlacer.activeSelf) {
             GameObject newObject = Instantiate (cubePrefab, cubePlacer.transform.position, cubePlacer.transform.rotation);
+            newObject.GetComponent<ColliderScript> ().setGovernScript = setGovernScript;
             newShapeSet.Add (newObject);
             setGovernScript.shapeSets.Add (newShapeSet);
         } else if (spherePlacer.activeSelf) {
             GameObject newObject = Instantiate (spherePrefab, spherePlacer.transform.position, spherePlacer.transform.rotation);
+            newObject.GetComponent<ColliderScript> ().setGovernScript = setGovernScript;
             newShapeSet.Add (newObject);
+            setGovernScript.shapeSets.Add (newShapeSet);
+        } else if (cylinderPlacer.activeSelf) {
+            GameObject newObject = Instantiate (cylinderPrefab, cylinderPlacer.transform.position, cylinderPlacer.transform.rotation);
+            GameObject newCylinder = newObject.transform.Find ("Cylinder").gameObject;
+            newCylinder.transform.parent = null;
+
+            newShapeSet.Add (newCylinder);
             setGovernScript.shapeSets.Add (newShapeSet);
         } else if (preliminaryObject != null) {
             bool validPlacement = CheckPreliminaryPlacement (preliminaryObject);
@@ -246,34 +248,33 @@ public class PlacementScript : MonoBehaviour {
         }
 #endif
         objectPlacingOn = obj;
-        if (attachScript.attachOn) {
-            attachScript.HandleAttach (obj, hit);
-        } else {
-            if (cylinderPlacer.activeSelf) {
-                if (obj.name == "Cylinder") {
-                    return;
-                }
-                GameObject newObject = Instantiate (cylinderPrefab, hit.transform.position, Quaternion.identity);
-                newObject.transform.rotation = Quaternion.FromToRotation (Vector3.up, hit.normal);
 
-                //possibly change this stuff with touch.position
-                float maxScaleValue = FindMaxObjectScaleValue (obj);
-                preliminaryObject = newObject.transform.Find ("Cylinder").gameObject;
-                float xVal = preliminaryObject.transform.localScale.x;
-                float zVal = preliminaryObject.transform.localScale.z;
-                preliminaryObject.transform.localScale = new Vector3 (xVal, maxScaleValue, zVal);
-                setGovernScript.AddToFormerSet (obj, preliminaryObject);
-            } else if (cubePlacer.activeSelf) {
-                InstantiateBlock (obj, cubePrefab, hit);
-            } else if (spherePlacer.activeSelf) {
-                InstantiateBlock (obj, spherePrefab, hit);
+        if (cylinderPlacer.activeSelf) {
+            if (obj.name == "Cylinder") {
+                return;
             }
+            GameObject newObject = Instantiate (cylinderPrefab, hit.transform.position, Quaternion.identity);
+            newObject.transform.rotation = Quaternion.FromToRotation (Vector3.up, hit.normal);
 
-            if (preliminaryObject != null) {
-                preliminaryObject.GetComponent<Renderer> ().sharedMaterial = yellowMaterial;
-                cancelScript.DisableAllPlacers (true);
-                placeButton.gameObject.SetActive (true);
-            }
+            //possibly change this stuff with touch.position
+            float maxScaleValue = FindMaxObjectScaleValue (obj);
+            preliminaryObject = newObject.transform.Find ("Cylinder").gameObject;
+            float xVal = preliminaryObject.transform.localScale.x;
+            float zVal = preliminaryObject.transform.localScale.z;
+            preliminaryObject.transform.localScale = new Vector3 (xVal, maxScaleValue, zVal);
+
+            preliminaryObject.transform.parent = null;
+            setGovernScript.AddToFormerSet (obj, preliminaryObject);
+        } else if (cubePlacer.activeSelf) {
+            InstantiateBlock (obj, cubePrefab, hit);
+        } else if (spherePlacer.activeSelf) {
+            InstantiateBlock (obj, spherePrefab, hit);
+        }
+
+        if (preliminaryObject != null) {
+            preliminaryObject.GetComponent<Renderer> ().sharedMaterial = yellowMaterial;
+            cancelScript.DisableAllPlacers (true);
+            placeButton.gameObject.SetActive (true);
         }
     }
 
@@ -304,7 +305,7 @@ public class PlacementScript : MonoBehaviour {
             Vector3 newPoint = hit.point + (closenessFactor * hit.normal);
             newObject = Instantiate (prefab, newPoint, Quaternion.identity);
         }
-
+        newObject.GetComponent<ColliderScript> ().setGovernScript = setGovernScript;
         newObject.transform.rotation = obj.transform.rotation;
         preliminaryObject = newObject;
         setGovernScript.AddToFormerSet (obj, newObject);

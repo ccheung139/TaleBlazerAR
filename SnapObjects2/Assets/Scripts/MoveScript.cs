@@ -13,6 +13,7 @@ public class MoveScript : MonoBehaviour {
     public CancelScript cancelScript;
     public Material blueMaterial;
     public Material yellowMaterial;
+    public Material grayMaterial;
 
     private Transform cylinderParent;
     private bool isMoving = false;
@@ -24,43 +25,6 @@ public class MoveScript : MonoBehaviour {
         finishButton.onClick.AddListener (PressedFinish);
     }
 
-    // void Update () {
-    //     if (isMoving && selectObjectsScript.selectedShapes.Count > 0) {
-    //         bool isAttached = false;
-    //         GameObject movingObject = selectObjectsScript.selectedShapes[0];
-    //         if (movingObject.name.Contains ("Cylinder")) {
-    //             movingObject = movingObject.transform.parent.gameObject;
-    //         }
-    //         RaycastHit[] hits = Physics.RaycastAll (arCamera.transform.position - arCamera.transform.up * 0.1f, arCamera.transform.forward, 1.5f);
-    //         if (hits.Length > 0) {
-    //             foreach (RaycastHit hit in hits) {
-    //                 GameObject obj = hit.transform.gameObject;
-    //                 if (!selectObjectsScript.selectedShapes.Contains (obj) && !placementScript.allSelects.Contains (obj)) {
-    //                     float distance = Vector3.Distance (obj.transform.position, arCamera.transform.position);
-    //                     if (distance <= .6f) {
-    //                         movingObject.transform.position = hit.point;
-    //                         ChangeColor (movingObject, yellowMaterial);
-    //                         isAttached = true;
-    //                         break;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         if (!isAttached) {
-    //             ChangeColor (movingObject, blueMaterial);
-    //             movingObject.transform.position = arCamera.transform.position + arCamera.transform.forward * 0.3f - arCamera.transform.up * 0.1f;
-    //         }
-    //     }
-    // }
-
-    // private void ChangeColor (GameObject movingObject, Material newColor) {
-    //     GameObject toChange = movingObject;
-    //     if (movingObject.name.Contains ("CylinderParent")) {
-    //         toChange = movingObject.transform.Find ("Cylinder").gameObject;
-    //     }
-    //     toChange.GetComponent<Renderer> ().sharedMaterial = newColor;
-    // }
-
     private void PressedMove () {
         List<GameObject> selectedObjects = selectObjectsScript.selectedShapes;
         MoveMultipleObjects (selectedObjects);
@@ -68,12 +32,7 @@ public class MoveScript : MonoBehaviour {
     }
 
     private void MoveOneObject (GameObject selected) {
-        if (selected.name == "Cylinder") {
-            cylinderParent = selected.transform.parent;
-            selected.transform.parent.parent = arCamera.transform;
-        } else {
-            selected.transform.parent = arCamera.transform;
-        }
+        selected.transform.parent = arCamera.transform;
     }
 
     private void MoveMultipleObjects (List<GameObject> selectedObjects) {
@@ -108,12 +67,7 @@ public class MoveScript : MonoBehaviour {
     }
 
     private void FinishMovementOneObject (GameObject selected) {
-        if (selected.name == "Cylinder") {
-            selected.transform.parent = cylinderParent;
-            selected.transform.parent.parent = null;
-        } else {
-            selected.transform.parent = null;
-        }
+        selected.transform.parent = null;
     }
 
     private void FinishMovementMultiple (List<GameObject> multipleSelected) {
@@ -129,6 +83,7 @@ public class MoveScript : MonoBehaviour {
             List<GameObject> newSet = new List<GameObject> ();
             newSet = DFSMultipleHelper (selectedObj, newSet);
             newSets.Add (newSet);
+            TurnConnectedGray (newSet);
         }
         if (selectedObjects.Count != 0) {
             DetachSetsMultiple (newSets, selectedObjects);
@@ -210,6 +165,12 @@ public class MoveScript : MonoBehaviour {
                 setGovernScript.shapeSets.Add (newSelectedList);
                 return;
             }
+        }
+    }
+
+    private void TurnConnectedGray (List<GameObject> newSet) {
+        foreach (GameObject obj in newSet) {
+            obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         }
     }
 }

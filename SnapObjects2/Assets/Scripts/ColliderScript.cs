@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ColliderScript : MonoBehaviour {
+    public SetGovernScript setGovernScript;
     public Material grayMaterial;
     public Material redMaterial;
     public static bool isColliding = false;
@@ -25,7 +26,9 @@ public class ColliderScript : MonoBehaviour {
         if (!collidingObjects.Contains (col.gameObject)) {
             collidingObjects.Add (col.gameObject);
         }
-        if (!col.gameObject.name.Contains ("Cylinder") && col.gameObject.transform.parent != gameObject.transform) {
+        if (!col.gameObject.name.Contains ("Cylinder") &&
+            col.gameObject.transform.parent != gameObject.transform &&
+            !CheckSameSet (col.gameObject)) {
             isColliding = true;
             ChangeToRed (col.gameObject);
         }
@@ -45,6 +48,15 @@ public class ColliderScript : MonoBehaviour {
             ChangeToGray (col.gameObject);
         }
         triggered = false;
+    }
+
+    private bool CheckSameSet (GameObject obj) {
+        foreach (List<GameObject> potentialSet in setGovernScript.shapeSets) {
+            if (potentialSet.Contains (gameObject) && potentialSet.Contains (obj)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void ChangeToGray (GameObject obj) {
