@@ -1509,6 +1509,22 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 629506548}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &629506551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 629506550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92c230d4ec77e4903af22170d17ff515, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  setGovernScript: {fileID: 1146572003}
+  grayMaterial: {fileID: 2100000, guid: 4834c7454548244b3b9553ad3a91b49c, type: 2}
+  redMaterial: {fileID: 2100000, guid: c181dfb4c66d947c79a6199c1fb8e311, type: 2}
+  collidingObjects: []
 --- !u!1 &648967119
 GameObject:
   m_ObjectHideFlags: 0
@@ -2272,6 +2288,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1281492730}
     m_Modifications:
+    - target: {fileID: -2864588301138971380, guid: 703ba3dcb98644eb2b5b15c4c6335465,
+        type: 3}
+      propertyPath: setGovernScript
+      value: 
+      objectReference: {fileID: 1146572003}
     - target: {fileID: 4457054419398966800, guid: 703ba3dcb98644eb2b5b15c4c6335465,
         type: 3}
       propertyPath: m_LocalPosition.x

@@ -112,10 +112,13 @@ public class ScaleScript : MonoBehaviour {
             scaleChange = new Vector3 (0, 0, delta);
         }
 
-        Vector3 scaleCopy = selected.transform.localScale + scaleChange;
-        if (scaleCopy.x > 0 && scaleCopy.y > 0 && scaleCopy.z > 0) {
-            selected.transform.localScale = scaleCopy;
+        foreach (GameObject selectedObj in selectObjectsScript.selectedShapes) {
+            Vector3 scaleCopy = selectedObj.transform.localScale + scaleChange;
+            if (scaleCopy.x > 0 && scaleCopy.y > 0 && scaleCopy.z > 0) {
+                selectedObj.transform.localScale = scaleCopy;
+            }
         }
+
         previousValue = newValue;
         UpdateScaleSpheres (selected);
     }

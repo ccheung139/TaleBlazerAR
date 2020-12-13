@@ -54,6 +54,8 @@ public class DrawSelectScript : MonoBehaviour {
             DrawBox ();
             // isDrawing = false;
             selectObjectsScript.SelectInBox (v3Center, v3Extents, false);
+        } else {
+            ClearLines ();
         }
     }
 

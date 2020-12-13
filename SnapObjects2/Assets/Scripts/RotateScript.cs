@@ -23,8 +23,8 @@ public class RotateScript : MonoBehaviour {
     private LineRenderer lineRenderer2;
     private LineRenderer lineRenderer3;
 
-    private Vector3 intialDirection;
     private Quaternion relative;
+    private List<Quaternion> relativeAngles = new List<Quaternion> ();
 
     private bool colliderTouched = false;
     private GameObject colliderTouchedObj;
@@ -69,19 +69,21 @@ public class RotateScript : MonoBehaviour {
     }
 
     private void CalculateRelativeAngle () {
+        relativeAngles = new List<Quaternion> ();
         Vector3 axis = colliderTouchedObj.GetComponent<LineRenderSphereScript> ().axis;
-        GameObject selected = selectObjectsScript.selectedShapes[0];
-        Quaternion initialRotation = selected.transform.rotation;
-        Vector3 direction = arCamera.transform.position - selected.transform.position;
-        if (axis == Vector3.up) {
-            direction.y = 0;
-        } else if (axis == Vector3.right) {
-            direction.x = 0;
-        } else if (axis == Vector3.forward) {
-            direction.z = 0;
+        foreach (GameObject selected in selectObjectsScript.selectedShapes) {
+            Quaternion initialRotation = selected.transform.rotation;
+            Vector3 direction = arCamera.transform.position - selected.transform.position;
+            if (axis == Vector3.up) {
+                direction.y = 0;
+            } else if (axis == Vector3.right) {
+                direction.x = 0;
+            } else if (axis == Vector3.forward) {
+                direction.z = 0;
+            }
+            var newRotation = Quaternion.LookRotation (direction) * Quaternion.Euler (0, 0, 0);
+            relativeAngles.Add (Quaternion.Inverse (newRotation) * initialRotation);
         }
-        var newRotation = Quaternion.LookRotation (direction) * Quaternion.Euler (0, 0, 0);
-        relative = Quaternion.Inverse (newRotation) * initialRotation;
     }
 
     private void HandleRotate () {
@@ -96,7 +98,6 @@ public class RotateScript : MonoBehaviour {
         }
         Vector3 axis = colliderTouchedObj.GetComponent<LineRenderSphereScript> ().axis;
         GameObject selected = selectObjectsScript.selectedShapes[0];
-        Vector3 selectedPosition = selected.transform.position;
         Vector3 direction = arCamera.transform.position - selected.transform.position;
 
         if (axis == Vector3.up) {
@@ -106,10 +107,15 @@ public class RotateScript : MonoBehaviour {
         } else if (axis == Vector3.forward) {
             direction.z = 0;
         }
-
         var newRotation = Quaternion.LookRotation (direction) * Quaternion.Euler (0, 0, 0);
-        var finalRotation = newRotation * relative;
-        selected.transform.rotation = Quaternion.Slerp (selected.transform.rotation, finalRotation, Time.deltaTime * 5f);
+
+        for (int i = 0; i < selectObjectsScript.selectedShapes.Count; i++) {
+            Quaternion relativeAngle = relativeAngles[i];
+            GameObject selectedObj = selectObjectsScript.selectedShapes[i];
+            var finalRotation = newRotation * relativeAngle;
+            selectedObj.transform.rotation = Quaternion.Slerp (selectedObj.transform.rotation, finalRotation, Time.deltaTime * 5f);
+        }
+
     }
 
     private void PressedRotate () {

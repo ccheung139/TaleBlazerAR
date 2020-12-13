@@ -46,6 +46,7 @@ public class SelectObjectsScript : MonoBehaviour {
         if (previousCenter == center && previousScale == scale && !isFinished) {
             return;
         }
+        selectedShapes = new List<GameObject> ();
         previousCenter = center;
         previousScale = scale;
 
@@ -53,7 +54,7 @@ public class SelectObjectsScript : MonoBehaviour {
         Collider[] hits = Physics.OverlapBox (center, scale);
         List<GameObject> newSelected = new List<GameObject> ();
         foreach (Collider hit in hits) {
-            if (!hit.name.Contains ("LineCube")) {
+            if (!hit.name.Contains ("LineCube") && !hit.name.Contains ("SphereLine(Clone)")) {
                 newSelected.Add (hit.GetComponent<Collider> ().gameObject);
             }
         }
