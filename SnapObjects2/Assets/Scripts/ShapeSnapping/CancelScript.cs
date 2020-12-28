@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using cakeslice;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +15,6 @@ public class CancelScript : MonoBehaviour {
     public GameObject cubePlacer;
     public GameObject spherePlacer;
     public GameObject cylinderPlacer;
-    public Material blueMaterial;
     public Material grayMaterial;
 
     void Start () {
@@ -43,14 +43,16 @@ public class CancelScript : MonoBehaviour {
 
     public void DeselectAssociatedShapes () {
         foreach (GameObject obj in ps.allSelects) {
-            obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            obj.GetComponent<cakeslice.Outline> ().enabled = false;
+            // obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
             obj.transform.parent = null;
         }
         ps.allSelects.Clear ();
         attachScript.attachOn = false;
 
         if (ps.preliminaryObject != null) {
-            ps.preliminaryObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            ps.preliminaryObject.GetComponent<cakeslice.Outline> ().enabled = false;
+            // ps.preliminaryObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
             ps.preliminaryObject = null;
         }
     }

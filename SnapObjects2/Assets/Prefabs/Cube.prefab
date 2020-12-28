@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1423561137040240627}
   - component: {fileID: 2419065396292970933}
   - component: {fileID: -8951822095965400110}
+  - component: {fileID: 1671705784287244159}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -110,6 +111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92c230d4ec77e4903af22170d17ff515, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  setGovernScript: {fileID: 0}
   grayMaterial: {fileID: 2100000, guid: 4834c7454548244b3b9553ad3a91b49c, type: 2}
   redMaterial: {fileID: 2100000, guid: c181dfb4c66d947c79a6199c1fb8e311, type: 2}
   collidingObjects: []
@@ -129,6 +131,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1671705784287244159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1423561137040240624}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0
 --- !u!1 &7477535959972008617
 GameObject:
   m_ObjectHideFlags: 0

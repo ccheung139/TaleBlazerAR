@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using cakeslice;
 using UnityEngine;
 
 public class ColliderScript : MonoBehaviour {
     public SetGovernScript setGovernScript;
-    public Material grayMaterial;
-    public Material redMaterial;
     public static bool isColliding = false;
     public List<GameObject> collidingObjects = new List<GameObject> ();
 
@@ -14,13 +13,13 @@ public class ColliderScript : MonoBehaviour {
 
     void Update () {
         if (triggered && !other) {
-            gameObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            gameObject.GetComponent<Outline> ().enabled = false;
             triggered = false;
         }
     }
 
     void OnTriggerEnter (Collider col) {
-        if (col.gameObject.name.Contains ("ScaleSphere")) {
+        if (col.gameObject.name.Contains ("ScaleSphere") || col.gameObject.name.Contains ("PaintColliderCapsule")) {
             return;
         }
         if (!collidingObjects.Contains (col.gameObject)) {
@@ -37,7 +36,7 @@ public class ColliderScript : MonoBehaviour {
     }
 
     void OnTriggerExit (Collider col) {
-        if (col.gameObject.name.Contains ("ScaleSphere")) {
+        if (col.gameObject.name.Contains ("ScaleSphere") || col.gameObject.name.Contains ("PaintColliderCapsule")) {
             return;
         }
         if (collidingObjects.Contains (col.gameObject)) {
@@ -60,10 +59,12 @@ public class ColliderScript : MonoBehaviour {
     }
 
     private void ChangeToGray (GameObject obj) {
-        obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+        obj.GetComponent<Outline> ().enabled = false;
+        obj.GetComponent<Outline> ().color = 0;
     }
 
     private void ChangeToRed (GameObject obj) {
-        obj.GetComponent<Renderer> ().sharedMaterial = redMaterial;
+        obj.GetComponent<Outline> ().enabled = true;
+        obj.GetComponent<Outline> ().color = 2;
     }
 }

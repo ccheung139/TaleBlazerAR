@@ -74,6 +74,7 @@ GameObject:
   - component: {fileID: 4457054419398966829}
   - component: {fileID: -5198943841416032817}
   - component: {fileID: -2864588301138971380}
+  - component: {fileID: -1092324661640711604}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -186,9 +187,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92c230d4ec77e4903af22170d17ff515, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  setGovernScript: {fileID: 0}
   grayMaterial: {fileID: 2100000, guid: 4834c7454548244b3b9553ad3a91b49c, type: 2}
   redMaterial: {fileID: 2100000, guid: c181dfb4c66d947c79a6199c1fb8e311, type: 2}
   collidingObjects: []
+--- !u!114 &-1092324661640711604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4457054419398966828}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0
 --- !u!1 &8859976009352167174
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using cakeslice;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -22,6 +23,8 @@ public class PlacementScript : MonoBehaviour {
     public GameObject cubePlacer;
     public GameObject spherePlacer;
     public GameObject cylinderPlacer;
+    public GameObject parentHolder;
+    public Canvas colorCanvas;
 
     public SelectObjectsScript selectObjectsScript;
     public CancelScript cancelScript;
@@ -29,10 +32,6 @@ public class PlacementScript : MonoBehaviour {
     public AttachScript attachScript;
     public RotateScript rotateScript;
     public ScaleScript scaleScript;
-
-    public Material blueMaterial;
-    public Material grayMaterial;
-    public Material yellowMaterial;
 
     public GameObject preliminaryObject;
     private GameObject objectPlacingOn;
@@ -132,7 +131,7 @@ public class PlacementScript : MonoBehaviour {
             if (Physics.Raycast (ray, out hitObject)) {
                 GameObject obj = hitObject.transform.gameObject;
                 selectObjectsScript.SelectShape (obj);
-            } else {
+            } else if (!colorCanvas.gameObject.activeSelf) {
                 selectObjectsScript.DeselectShapes ();
             }
         }
@@ -140,21 +139,18 @@ public class PlacementScript : MonoBehaviour {
 
     private void PressedPlaceCube () {
         cancelScript.DisableAllPlacers ();
-        cubePlacer.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         cubePlacer.SetActive (true);
         placeButton.gameObject.SetActive (true);
     }
 
     private void PressedPlaceSphere () {
         cancelScript.DisableAllPlacers ();
-        spherePlacer.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         spherePlacer.SetActive (true);
         placeButton.gameObject.SetActive (true);
     }
 
     private void PressedPlaceCylinder () {
         cancelScript.DisableAllPlacers ();
-        cylinderPlacer.transform.Find ("CylinderPlaced").gameObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         cylinderPlacer.SetActive (true);
         placeButton.gameObject.SetActive (true);
     }
@@ -163,9 +159,7 @@ public class PlacementScript : MonoBehaviour {
         if (selectObjectsScript.selectedShapes.Count == 1) {
             TurnAssociatedShapesYellow (selectObjectsScript.selectedShapes[0]);
             foreach (GameObject obj in allSelects) {
-                Vector3 oldScale = obj.transform.localScale;
-                obj.transform.parent = selectObjectsScript.selectedShapes[0].transform;
-                // obj.transform.localScale = oldScale;
+                obj.transform.parent = parentHolder.transform;
             }
         }
     }
@@ -175,11 +169,10 @@ public class PlacementScript : MonoBehaviour {
             if (potentialList.Contains (obj)) {
                 foreach (GameObject associatedObj in potentialList) {
                     if (associatedObj != obj) {
-                        associatedObj.GetComponent<Renderer> ().sharedMaterial = yellowMaterial;
+                        associatedObj.GetComponent<cakeslice.Outline> ().enabled = true;
                         allSelects.Add (associatedObj);
                     }
                 }
-                // return;
             }
         }
     }
@@ -209,8 +202,10 @@ public class PlacementScript : MonoBehaviour {
                 cancelScript.DisableAllPlacers (false);
                 return;
             }
-            preliminaryObject.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
-            objectPlacingOn.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            preliminaryObject.GetComponent<cakeslice.Outline> ().enabled = false;
+            objectPlacingOn.GetComponent<cakeslice.Outline> ().enabled = false;
+            preliminaryObject.GetComponent<cakeslice.Outline> ().color = 0;
+            objectPlacingOn.GetComponent<cakeslice.Outline> ().color = 0;
             preliminaryObject = null;
             objectPlacingOn = null;
             if (allSelects.Count != 0) {
@@ -272,7 +267,7 @@ public class PlacementScript : MonoBehaviour {
         }
 
         if (preliminaryObject != null) {
-            preliminaryObject.GetComponent<Renderer> ().sharedMaterial = yellowMaterial;
+            preliminaryObject.GetComponent<cakeslice.Outline> ().enabled = true;
             cancelScript.DisableAllPlacers (true);
             placeButton.gameObject.SetActive (true);
         }

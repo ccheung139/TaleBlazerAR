@@ -14,6 +14,18 @@ public class ScaleScript : MonoBehaviour {
     public GameObject xScaleSphere;
     public GameObject yScaleSphere;
     public GameObject zScaleSphere;
+    public GameObject parentHolder;
+
+    public GameObject audioPlayer;
+    public Material grayLineMaterial;
+    public Material redLineMaterial;
+    public Material blueLineMaterial;
+    public Material greenLineMaterial;
+    public Material grayMaterial;
+    public Material blueMaterial;
+    public Material yellowMaterial;
+    public Material transparentBlue;
+    public Material transparentYellow;
 
     public bool scaleOn = false;
 
@@ -51,6 +63,9 @@ public class ScaleScript : MonoBehaviour {
                     colliderTouchedObj = obj;
                     colliderTouched = true;
                     CalculateStartingPosition ();
+                    Handheld.Vibrate ();
+                    audioPlayer.GetComponent<AudioSource> ().Play ();
+                    HandleLineChanges (colliderTouchedObj);
                 }
             } else {
                 colliderTouched = false;
@@ -58,6 +73,35 @@ public class ScaleScript : MonoBehaviour {
 
         }
 
+    }
+
+    private void HandleLineChanges (GameObject colliderTouchedObj) {
+        GameObject scaleSphere;
+        if (colliderTouchedObj.name == "XScaleSphere") {
+            scaleSphere = xScaleSphere;
+            yScaleSphere.GetComponent<Renderer> ().sharedMaterial = grayLineMaterial;
+            zScaleSphere.GetComponent<Renderer> ().sharedMaterial = grayLineMaterial;
+        } else if (colliderTouchedObj.name == "YScaleSphere") {
+            scaleSphere = yScaleSphere;
+            xScaleSphere.GetComponent<Renderer> ().sharedMaterial = grayLineMaterial;
+            zScaleSphere.GetComponent<Renderer> ().sharedMaterial = grayLineMaterial;
+        } else {
+            scaleSphere = zScaleSphere;
+            xScaleSphere.GetComponent<Renderer> ().sharedMaterial = grayLineMaterial;
+            yScaleSphere.GetComponent<Renderer> ().sharedMaterial = grayLineMaterial;
+        }
+        scaleSphere.transform.localScale = new Vector3 (0.06f, 0.06f, 0.06f);
+    }
+
+    private void ResetCapsules () {
+        ResetCapsuleOption (xScaleSphere, redLineMaterial);
+        ResetCapsuleOption (yScaleSphere, greenLineMaterial);
+        ResetCapsuleOption (zScaleSphere, blueLineMaterial);
+    }
+
+    private void ResetCapsuleOption (GameObject capsule, Material material) {
+        capsule.GetComponent<Renderer> ().sharedMaterial = material;
+        capsule.transform.localScale = new Vector3 (0.03f, 0.03f, 0.03f);
     }
 
     private void CalculateStartingPosition () {
@@ -79,17 +123,17 @@ public class ScaleScript : MonoBehaviour {
 #endif
         if (released) {
             colliderTouched = false;
+            ResetCapsules ();
             return;
         }
-        GameObject selected = selectObjectsScript.selectedShapes[0];
-        Vector3 cameraPosition = arCamera.transform.position;
 
+        Vector3 cameraPosition = arCamera.transform.position;
         Vector3 scaleChange = new Vector3 (0, 0, 0);
         float newValue = 0;
         if (colliderTouchedObj.name == "YScaleSphere") {
             newValue = cameraPosition.y;
             float delta = newValue - previousValue;
-            float value = yScaleSphere.transform.position.y - selected.transform.position.y;
+            float value = yScaleSphere.transform.position.y - parentHolder.transform.position.y;
             if (value < 0) {
                 delta = -delta;
             }
@@ -97,7 +141,7 @@ public class ScaleScript : MonoBehaviour {
         } else if (colliderTouchedObj.name == "XScaleSphere") {
             newValue = cameraPosition.x;
             float delta = newValue - previousValue;
-            float value = xScaleSphere.transform.position.x - selected.transform.position.x;
+            float value = xScaleSphere.transform.position.x - parentHolder.transform.position.x;
             if (value < 0) {
                 delta = -delta;
             }
@@ -105,21 +149,20 @@ public class ScaleScript : MonoBehaviour {
         } else {
             newValue = cameraPosition.z;
             float delta = newValue - previousValue;
-            float value = zScaleSphere.transform.position.z - selected.transform.position.z;
+            float value = zScaleSphere.transform.position.z - parentHolder.transform.position.z;
             if (value < 0) {
                 delta = -delta;
             }
             scaleChange = new Vector3 (0, 0, delta);
         }
 
-        foreach (GameObject selectedObj in selectObjectsScript.selectedShapes) {
-            Vector3 scaleCopy = selectedObj.transform.localScale + scaleChange;
-            if (scaleCopy.x > 0 && scaleCopy.y > 0 && scaleCopy.z > 0) {
-                selectedObj.transform.localScale = scaleCopy;
-            }
+        Vector3 scaleCopy = parentHolder.transform.localScale + scaleChange * 3f;
+        if (scaleCopy.x > 0 && scaleCopy.y > 0 && scaleCopy.z > 0) {
+            parentHolder.transform.localScale = scaleCopy;
         }
 
         previousValue = newValue;
+        GameObject selected = selectObjectsScript.selectedShapes[0];
         UpdateScaleSpheres (selected);
     }
 
@@ -133,8 +176,49 @@ public class ScaleScript : MonoBehaviour {
         scaleOn = !scaleOn;
         if (scaleOn) {
             EnableCapsules ();
+            TransparencyHandler (true);
         } else {
             DisableCapsules ();
+            TransparencyHandler (false);
+        }
+    }
+
+    private void TransparencyHandler (bool isTransparent) {
+        foreach (Transform objTransform in parentHolder.transform) {
+            GameObject selectedObj = objTransform.gameObject;
+            if (isTransparent) {
+                TransparencyHelper (selectedObj);
+            } else {
+                OpaqueHelper (selectedObj);
+            }
+            foreach (Transform childTransform in selectedObj.transform) {
+                GameObject child = childTransform.gameObject;
+                if (child.name == "Cylinder" || child.name == "Cube(Clone)" || child.name == "Sphere(Clone)") {
+                    if (isTransparent) {
+                        TransparencyHelper (child);
+                    } else {
+                        OpaqueHelper (child);
+                    }
+                }
+            }
+        }
+    }
+
+    private void TransparencyHelper (GameObject obj) {
+        Material mat = obj.GetComponent<Renderer> ().sharedMaterial;
+        if (mat.name == "BlueMaterial") {
+            obj.GetComponent<Renderer> ().sharedMaterial = transparentBlue;
+        } else if (mat.name == "YellowMaterial") {
+            obj.GetComponent<Renderer> ().sharedMaterial = transparentYellow;
+        }
+    }
+
+    private void OpaqueHelper (GameObject obj) {
+        Material mat = obj.GetComponent<Renderer> ().sharedMaterial;
+        if (mat.name == "TransparentBlue") {
+            obj.GetComponent<Renderer> ().sharedMaterial = blueMaterial;
+        } else if (mat.name == "TransparentYellow") {
+            obj.GetComponent<Renderer> ().sharedMaterial = yellowMaterial;
         }
     }
 
@@ -143,6 +227,7 @@ public class ScaleScript : MonoBehaviour {
             return;
         }
         GameObject selected = selectObjectsScript.selectedShapes[0];
+        // GameObject selected = parentHolder;
         UpdateScaleSpheres (selected);
 
         xScaleSphere.SetActive (true);

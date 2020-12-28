@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using cakeslice;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ public class CopyPasteScript : MonoBehaviour {
     public Button copyButton;
     public Button pasteButton;
     public Camera arCamera;
-    public Material grayMaterial;
+    public GameObject parentHolder;
 
     private List<GameObject> copiedObjects = new List<GameObject> ();
     private List<GameObject> seenObjectsMultiple = new List<GameObject> ();
@@ -21,8 +22,8 @@ public class CopyPasteScript : MonoBehaviour {
 
     private void CopyPressed () {
         ResetCopied ();
-        for (int i = 0; i < selectObjectsScript.selectedShapes.Count; i++) {
-            GameObject selectedObj = selectObjectsScript.selectedShapes[i];
+        foreach (Transform objTransform in parentHolder.transform) {
+            GameObject selectedObj = objTransform.gameObject;
             GameObject duplicate = Instantiate (selectedObj, selectedObj.transform.position, selectedObj.transform.rotation, arCamera.transform);
             duplicate.name = selectedObj.name;
             duplicate.SetActive (false);
@@ -34,7 +35,7 @@ public class CopyPasteScript : MonoBehaviour {
         foreach (GameObject obj in copiedObjects) {
             obj.SetActive (true);
             obj.transform.parent = null;
-            obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            obj.GetComponent<cakeslice.Outline> ().enabled = false;
         }
         DFSMultipleFindAttached ();
         DisassembleChildren ();
@@ -51,9 +52,9 @@ public class CopyPasteScript : MonoBehaviour {
             }
             foreach (GameObject objToDissasemble in objectsToDissasemble) {
                 objToDissasemble.transform.parent = null;
-                objToDissasemble.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+                objToDissasemble.GetComponent<cakeslice.Outline> ().enabled = false;
             }
-            obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            obj.GetComponent<cakeslice.Outline> ().enabled = false;
         }
     }
 

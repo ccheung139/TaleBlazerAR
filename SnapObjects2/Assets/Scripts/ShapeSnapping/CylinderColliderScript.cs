@@ -33,7 +33,7 @@ public class CylinderColliderScript : MonoBehaviour {
     }
 
     void OnTriggerEnter (Collider col) {
-        if (col.gameObject.name.Contains ("Placed")) {
+        if (col.gameObject.name.Contains ("Placed") || col.gameObject.name.Contains ("PaintColliderCapsule")) {
             return;
         }
         if (!collidingObjects.Contains (col.gameObject)) {
@@ -42,7 +42,7 @@ public class CylinderColliderScript : MonoBehaviour {
     }
 
     void OnTriggerExit (Collider col) {
-        if (col.gameObject.name.Contains ("Placed")) {
+        if (col.gameObject.name.Contains ("Placed") || col.gameObject.name.Contains ("PaintColliderCapsule")) {
             return;
         }
         if (collidingObjects.Contains (col.gameObject)) {

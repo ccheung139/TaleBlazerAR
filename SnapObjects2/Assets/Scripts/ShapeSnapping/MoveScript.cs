@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using cakeslice;
 
 public class MoveScript : MonoBehaviour {
     public Button moveButton;
@@ -11,9 +12,7 @@ public class MoveScript : MonoBehaviour {
     public SetGovernScript setGovernScript;
     public SelectObjectsScript selectObjectsScript;
     public CancelScript cancelScript;
-    public Material blueMaterial;
-    public Material yellowMaterial;
-    public Material grayMaterial;
+    public GameObject parentHolder;
 
     private Transform cylinderParent;
     private bool isMoving = false;
@@ -36,9 +35,10 @@ public class MoveScript : MonoBehaviour {
     }
 
     private void MoveMultipleObjects (List<GameObject> selectedObjects) {
-        foreach (GameObject obj in selectedObjects) {
-            MoveOneObject (obj);
-        }
+        // foreach (GameObject obj in selectedObjects) {
+        //     MoveOneObject (obj);
+        // }
+        parentHolder.transform.parent = arCamera.transform;
     }
 
     private void StartMovements () {
@@ -75,6 +75,7 @@ public class MoveScript : MonoBehaviour {
             FinishMovementOneObject (selected);
         }
         selectObjectsScript.DeselectShapes ();
+        parentHolder.transform.parent = null;
     }
 
     private void DFSMultipleFindAttached (List<GameObject> selectedObjects) {
@@ -170,7 +171,9 @@ public class MoveScript : MonoBehaviour {
 
     private void TurnConnectedGray (List<GameObject> newSet) {
         foreach (GameObject obj in newSet) {
-            obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
+            obj.GetComponent<cakeslice.Outline>().enabled = false;
+            obj.GetComponent<cakeslice.Outline>().color = 0;
+            // obj.GetComponent<Renderer> ().sharedMaterial = grayMaterial;
         }
     }
 }
