@@ -40,6 +40,11 @@ public class CustomReactionScript : MonoBehaviour {
     private float movementSpeed = 0.5f;
     int i = 0;
     Vector3[] positions;
+    private List<float> times = new List<float> ();
+    private List<Quaternion> rotations = new List<Quaternion> ();
+    Gyroscope m_Gyro;
+    private Quaternion startRotation;
+    private Quaternion startCubeRotation;
 
     // Start is called before the first frame update
     void Start () {
@@ -47,6 +52,9 @@ public class CustomReactionScript : MonoBehaviour {
         drawReactionButton.onClick.AddListener (DrawPressed);
         finishReactionButton.onClick.AddListener (FinishPressed);
         resetButton.onClick.AddListener (ResetPressed);
+
+        m_Gyro = Input.gyro;
+        m_Gyro.enabled = true;
     }
 
     // Update is called once per frame
@@ -58,10 +66,23 @@ public class CustomReactionScript : MonoBehaviour {
                     lineRenderer.positionCount++;
                 }
                 lineRenderer.SetPosition (index++, newPos);
+                times.Add (Time.time);
+                Quaternion relativeRotation = startRotation * Quaternion.Inverse (arCamera.transform.rotation);
+                Quaternion rotation = Quaternion.Inverse (startCubeRotation * relativeRotation);
+                rotations.Add (rotation);
             }
         } else if (reactMove) {
             ReactMovement ();
         }
+        // Debug.Log (Input.gyro.attitude);
+
+        // referenceCube.transform.rotation = startRotation * Quaternion.Inverse (arCamera.transform.rotation);
+        // referenceCube.transform.rotation = arCamera.transform.rotation;
+        // referenceCube.transform.rotation = GyroToUnity(Input.gyro.attitude);
+    }
+
+    private Quaternion GyroToUnity (Quaternion q) {
+        return new Quaternion (q.x, q.y, -q.z, -q.w);
     }
 
     private void DefinePressed () {
@@ -104,6 +125,8 @@ public class CustomReactionScript : MonoBehaviour {
         lineRenderer.SetPosition (0, arCamera.transform.position);
         lineRenderer.SetPosition (1, arCamera.transform.position);
         drawing = true;
+        startRotation = arCamera.transform.rotation;
+        startCubeRotation = referenceCube.transform.rotation;
     }
 
     private void StopLine () {
@@ -152,14 +175,33 @@ public class CustomReactionScript : MonoBehaviour {
                 }
                 targetPosition = positions[i];
             }
-
             float step = movementSpeed * Time.deltaTime;
-            referenceCube.transform.position = Vector3.MoveTowards (referenceCube.transform.position, targetPosition, step);
+            if (i > 2) {
+                Vector3 previousPoint = positions[i - 1];
+                float previousTime = times[i - 3];
+
+                float targetTime = times[i - 2];
+                float distance = Vector3.Distance (targetPosition, previousPoint);
+                float timeDifference = targetTime - previousTime;
+
+                float speed = distance / timeDifference;
+                float newStep = speed * Time.deltaTime;
+                referenceCube.transform.position = Vector3.MoveTowards (referenceCube.transform.position, targetPosition, newStep);
+
+                Quaternion targetRotation = rotations[i - 2];
+                float rotStep = 100f * Time.deltaTime;
+                referenceCube.transform.rotation = Quaternion.RotateTowards (referenceCube.transform.rotation, targetRotation, rotStep);
+            } else {
+
+                referenceCube.transform.position = Vector3.MoveTowards (referenceCube.transform.position, targetPosition, step);
+            }
         }
     }
 
     private void ResetPressed () {
         ClearLines ();
         positions = new Vector3[0];
+        times = new List<float> ();
+        rotations = new List<Quaternion> ();
     }
 }
