@@ -16,6 +16,7 @@ public class DrawSpaceScript : MonoBehaviour {
     public GameObject barnBottom;
     public GameObject grass;
     public Image placeGameBounds;
+    public GameObject fencePrefab;
 
     private Vector3 v3FrontTopLeft;
     private Vector3 v3FrontTopRight;
@@ -81,8 +82,12 @@ public class DrawSpaceScript : MonoBehaviour {
         drawFinishButton.gameObject.SetActive (false);
         SaveSpace.SavePlayerSpace (this);
 
-        SizeGrass ();
-        ClearLines ();
+        // SizeGrass ();
+        // ClearLines ();
+        DrawFences (v3FrontBottomLeft, v3FrontBottomRight);
+        DrawFences (v3FrontBottomRight, v3BackBottomRight);
+        DrawFences (v3BackBottomRight, v3BackBottomLeft);
+        DrawFences (v3BackBottomLeft, v3FrontBottomLeft);
         barnPlacementScript.PlaceBarnPressed (v3Center, v3Extents);
     }
 
@@ -170,11 +175,9 @@ public class DrawSpaceScript : MonoBehaviour {
         v3Extents = extents;
 
         PositionFinding ();
-        SizeGrass ();
-        // grass.transform.parent = arCamera.transform;
-        moveGrassButton.gameObject.SetActive (true);
-        finishPlacingButton.gameObject.SetActive (true);
-        // barnPlacementScript.PlaceBarnPressed (v3Center, v3Extents);
+        // SizeGrass ();
+        // moveGrassButton.gameObject.SetActive (true);
+        // finishPlacingButton.gameObject.SetActive (true);
     }
 
     private void MoveGrassPressed () {
@@ -211,6 +214,19 @@ public class DrawSpaceScript : MonoBehaviour {
         float z = height > 0 ? v3FrontBottomLeft.z : v3BackBottomRight.z;
 
         return new Rect (x, z, width, height);
+    }
+
+    private void DrawFences (Vector3 point1, Vector3 point2) {
+        Vector3 direction = Vector3.Normalize (point2 - point1);
+        float fenceLength = fencePrefab.GetComponent<MeshRenderer> ().bounds.size.x;
+        float distance = Vector3.Distance (point2, point1);
+        float counter = 0;
+        Vector3 pointToPlace = point1;
+        while (counter < distance) {
+            Instantiate (fencePrefab, pointToPlace, Quaternion.LookRotation (direction, Vector3.up) * Quaternion.Euler (0, 90, 0));
+            counter += fenceLength;
+            pointToPlace = point1 + (direction * counter);
+        }
     }
 
 }
