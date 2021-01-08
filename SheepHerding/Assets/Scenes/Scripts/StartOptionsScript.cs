@@ -9,7 +9,6 @@ public class StartOptionsScript : MonoBehaviour {
     public Button loadSpaceButton;
     public DrawSpaceScript drawSpaceScript;
     public Image logo;
-    public Image placeGameBounds;
 
     void Start () {
         createSpaceButton.onClick.AddListener (CreateSpacePressed);
@@ -24,8 +23,6 @@ public class StartOptionsScript : MonoBehaviour {
     private void LoadSpace () {
         StartSpace ();
         drawSpaceScript.LoadSpace ();
-        placeGameBounds.gameObject.SetActive (true);
-        
     }
 
     private void StartSpace () {

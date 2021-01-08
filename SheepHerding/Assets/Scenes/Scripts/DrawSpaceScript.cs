@@ -2,21 +2,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR.ARFoundation;
 
 public class DrawSpaceScript : MonoBehaviour {
     public Button drawSpaceButton;
     public Button drawFinishButton;
-    public Button moveGrassButton;
-    public Button finishPlacingButton;
-    public Button placeGrassButton;
+    public Button drawConnectorButton;
+    public Button drawRoom2Button;
+    public Button placeFrontGateButton;
+    public Button placeBackGateButton;
+    public Button foundFrontGateButton;
+    public Button foundBackGateButton;
+    public Image placeFrontGateText;
+    public Image placeBackGateText;
+    public Image foundFrontGateText;
+    public Image foundBackGateText;
 
     public Camera arCamera;
     public GameObject line1;
+    public SheepSpawnScript sheepSpawnScript;
     public BarnPlacementScript barnPlacementScript;
     public GameObject barnBottom;
     public GameObject grass;
-    public Image placeGameBounds;
-    public GameObject fencePrefab;
+    public GameObject connectorFencePrefab;
+    public GameObject roomFencePrefab;
+    public ARSessionOrigin origin;
 
     private Vector3 v3FrontTopLeft;
     private Vector3 v3FrontTopRight;
@@ -30,8 +40,16 @@ public class DrawSpaceScript : MonoBehaviour {
     public Vector3 v3Center;
     public Vector3 v3Extents;
 
+    public Bounds room1Bounds;
+    public Bounds room2Bounds;
+    public List<Bounds> connectingRooms = new List<Bounds> ();
+
+    public Vector3 frontGatePosition;
+    public Vector3 backGatePosition;
+
+    private int createRoomStatus = 0;
+
     private bool isDrawing = false;
-    private bool movingGrass = false;
     private Vector3 firstPoint;
     private Vector3 possiblePoint;
     private Vector3 endPoint;
@@ -40,17 +58,16 @@ public class DrawSpaceScript : MonoBehaviour {
     private int cornerVertices = 5;
     private int endCapVertices = 5;
     private LineRenderer lineRenderer1;
-    private LineRenderer lineRenderer2;
-    private LineRenderer lineRenderer3;
-    private LineRenderer lineRenderer4;
 
-    // Start is called before the first frame update
     void Start () {
         drawSpaceButton.onClick.AddListener (DrawPressed);
         drawFinishButton.onClick.AddListener (DrawFinished);
-        moveGrassButton.onClick.AddListener (MoveGrassPressed);
-        finishPlacingButton.onClick.AddListener (FinishPlacingPressed);
-        placeGrassButton.onClick.AddListener (PlaceGrassPressed);
+        drawConnectorButton.onClick.AddListener (DrawConnectorPressed);
+        drawRoom2Button.onClick.AddListener (DrawRoom2Pressed);
+        placeFrontGateButton.onClick.AddListener (PlaceFrontGatePressed);
+        placeBackGateButton.onClick.AddListener (PlaceBackGatePressed);
+        foundFrontGateButton.onClick.AddListener (FoundFrontGatePressed);
+        foundBackGateButton.onClick.AddListener (FoundBackGatePressed);
     }
 
     void Update () {
@@ -59,8 +76,6 @@ public class DrawSpaceScript : MonoBehaviour {
             possiblePoint = arCamera.transform.position + (arCamera.transform.forward * 0.5f);
             CalcPositons (possiblePoint);
             DrawBox ();
-        } else if (movingGrass) {
-            grass.transform.rotation = Quaternion.Euler (90, arCamera.transform.eulerAngles.y, 0);
         }
     }
 
@@ -80,21 +95,33 @@ public class DrawSpaceScript : MonoBehaviour {
         CalcPositons (endPoint);
         DrawBox ();
         drawFinishButton.gameObject.SetActive (false);
-        SaveSpace.SavePlayerSpace (this);
 
-        // SizeGrass ();
-        // ClearLines ();
         DrawFences (v3FrontBottomLeft, v3FrontBottomRight);
         DrawFences (v3FrontBottomRight, v3BackBottomRight);
         DrawFences (v3BackBottomRight, v3BackBottomLeft);
         DrawFences (v3BackBottomLeft, v3FrontBottomLeft);
-        barnPlacementScript.PlaceBarnPressed (v3Center, v3Extents);
+        ClearLines ();
+
+        if (createRoomStatus == 0) {
+            room1Bounds = BoundsHelper ();
+            drawConnectorButton.gameObject.SetActive (true);
+            drawRoom2Button.gameObject.SetActive (true);
+        } else if (createRoomStatus == 1) {
+            connectingRooms.Add (BoundsHelper ());
+            drawConnectorButton.gameObject.SetActive (true);
+            drawRoom2Button.gameObject.SetActive (true);
+        } else {
+            room2Bounds = BoundsHelper ();
+            TakeOutOverlapingFences ();
+            // sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms);
+            placeFrontGateButton.gameObject.SetActive (true);
+            placeFrontGateText.gameObject.SetActive (true);
+
+        }
     }
 
-    private void SizeGrass () {
-        grass.SetActive (true);
-        Stretch (grass, v3FrontBottomLeft, v3FrontBottomRight, v3BackBottomLeft, true);
-        grass.transform.position = new Vector3 (v3Center.x, -0.8f, v3Center.z);
+    private Bounds BoundsHelper () {
+        return new Bounds (v3Center, new Vector3 (v3Extents.x * 2, 100f, v3Extents.z * 2));
     }
 
     private void CalcPositons (Vector3 endPoint) {
@@ -103,20 +130,10 @@ public class DrawSpaceScript : MonoBehaviour {
         scale.y = Mathf.Abs (scale.y);
         scale.z = Mathf.Abs (scale.z);
 
-        // float yPoint = barnBottom.transform.position.y;
-        // float yPoint = -0.3f;
         v3Center = (firstPoint + endPoint) * 0.5f;
         v3Extents = scale * 0.5f;
 
         PositionFinding ();
-    }
-
-    public void Stretch (GameObject _sprite, Vector3 _initialPosition, Vector3 secondPos, Vector3 _finalPosition, bool _mirrorZ) {
-        float width = _sprite.GetComponent<SpriteRenderer> ().bounds.size.x;
-        Vector3 scale = new Vector3 (1, 1, 1);
-        scale.x = Vector3.Distance (_initialPosition, secondPos) / width;
-        scale.y = Vector3.Distance (_initialPosition, _finalPosition) / width;
-        _sprite.transform.localScale = scale;
     }
 
     private void PositionFinding () {
@@ -161,49 +178,117 @@ public class DrawSpaceScript : MonoBehaviour {
     }
 
     public void LoadSpace () {
+        foundFrontGateButton.gameObject.SetActive (true);
+        foundFrontGateText.gameObject.SetActive (true);
+    }
+
+    private void TranslateAndRotateLoad () {
         SpaceData data = SaveSpace.LoadPlayerSpace ();
+
+        Vector3 oldFront = FloatToVector (data.frontGatePosition);
+        Vector3 oldBack = FloatToVector (data.backGatePosition);
+        float angles = Vector3.SignedAngle (oldBack - oldFront, backGatePosition - frontGatePosition, Vector3.up);
+        Vector3 relative = new Vector3 (0, angles, 0);
+        Vector3 translation = oldFront - frontGatePosition;
+        translation.y = 0.8f;
+
+        LoadCenterAndExtents (out room1Bounds, data.room1Center, data.room1Extents, translation, relative, frontGatePosition);
+        // LoadFences (room1Bounds);
+
+        LoadCenterAndExtents (out room2Bounds, data.room2Center, data.room2Extents, translation, relative, frontGatePosition);
+        // LoadFences (room2Bounds);
+
+        for (int i = 0; i < data.connectingRoomCenters.GetLength (0); i++) {
+            Bounds connectBounds;
+            float[] connectCenter = new float[3];
+            connectCenter[0] = data.connectingRoomCenters[i, 0];
+            connectCenter[1] = data.connectingRoomCenters[i, 1];
+            connectCenter[2] = data.connectingRoomCenters[i, 2];
+
+            float[] connectExtent = new float[3];
+            connectExtent[0] = data.connectingRoomExtents[i, 0];
+            connectExtent[1] = data.connectingRoomExtents[i, 1];
+            connectExtent[2] = data.connectingRoomExtents[i, 2];
+            LoadCenterAndExtents (out connectBounds, connectCenter, connectExtent, translation, relative, frontGatePosition);
+            // LoadFences (connectBounds);
+            connectingRooms.Add (connectBounds);
+        }
+
+        // TakeOutOverlapingFences ();
+    }
+
+    private Vector3 TranslateAndRotateVector (Vector3 oldVector, Vector3 translation, Quaternion relative) {
+        Vector3 newVector = oldVector;
+        newVector += translation;
+        return relative * newVector;
+    }
+
+    private Vector3 FloatToVector (float[] f) {
+        Vector3 ret;
+        ret.x = f[0];
+        ret.y = f[1];
+        ret.z = f[2];
+        return ret;
+    }
+
+    private void LoadFences (Bounds bounds) {
+        v3Center = bounds.center;
+        v3Extents = bounds.extents;
+        PositionFinding ();
+        DrawFences (v3FrontBottomLeft, v3FrontBottomRight);
+        DrawFences (v3FrontBottomRight, v3BackBottomRight);
+        DrawFences (v3BackBottomRight, v3BackBottomLeft);
+        DrawFences (v3BackBottomLeft, v3FrontBottomLeft);
+    }
+
+    private void LoadCenterAndExtents (out Bounds bound, float[] centerData, float[] extentsData, Vector3 translation, Vector3 relative, Vector3 ppp) {
         Vector3 center;
-        center.x = data.center[0];
-        center.y = data.center[1];
-        center.z = data.center[2];
-        v3Center = center;
+        center.x = centerData[0];
+        center.y = centerData[1];
+        center.z = centerData[2];
 
         Vector3 extents;
-        extents.x = data.extents[0];
-        extents.y = data.extents[1];
-        extents.z = data.extents[2];
-        v3Extents = extents;
+        extents.x = extentsData[0];
+        extents.y = 100f;
+        extents.z = extentsData[2];
 
-        PositionFinding ();
-        // SizeGrass ();
-        // moveGrassButton.gameObject.SetActive (true);
-        // finishPlacingButton.gameObject.SetActive (true);
+        Vector3 topRight = center;
+        topRight.x += extents.x / 2f;
+        topRight.z += extents.z / 2f;
+        Vector3 topLeft = center;
+        topLeft.x -= extents.x / 2f;
+        topLeft.z += extents.z / 2f;
+        Vector3 bottomRight = center;
+        bottomRight.x += extents.x / 2f;
+        bottomRight.z -= extents.z / 2f;
+        Vector3 bottomLeft = center;
+        bottomLeft.x -= extents.x / 2f;
+        bottomLeft.z -= extents.z / 2f;
+
+        center -= translation;
+        topRight -= translation;
+        topLeft -= translation;
+        bottomRight -= translation;
+        bottomLeft -= translation;
+
+        center = RotatePointAroundPivot (center, center, relative);
+        topRight = RotatePointAroundPivot (topRight, ppp, relative);
+        topLeft = RotatePointAroundPivot (topLeft, ppp, relative);
+        bottomRight = RotatePointAroundPivot (bottomRight, ppp, relative);
+        bottomLeft = RotatePointAroundPivot (bottomLeft, ppp, relative);
+        DrawFences (topRight, topLeft);
+        DrawFences (topLeft, bottomLeft);
+        DrawFences (bottomLeft, bottomRight);
+        DrawFences (bottomRight, topRight);
+
+        bound = new Bounds (center, extents);
     }
 
-    private void MoveGrassPressed () {
-        movingGrass = true;
-        grass.transform.parent = arCamera.transform;
-        moveGrassButton.gameObject.SetActive (false);
-        placeGrassButton.gameObject.SetActive (true);
-    }
-
-    private void PlaceGrassPressed () {
-        movingGrass = false;
-        grass.transform.parent = null;
-        // grass.transform.rotation = Quaternion.Euler (90, 0, 0);
-        moveGrassButton.gameObject.SetActive (true);
-        placeGrassButton.gameObject.SetActive (false);
-    }
-
-    private void FinishPlacingPressed () {
-        PlaceGrassPressed ();
-        moveGrassButton.gameObject.SetActive (false);
-        placeGrassButton.gameObject.SetActive (false);
-        finishPlacingButton.gameObject.SetActive (false);
-        placeGameBounds.gameObject.SetActive (false);
-
-        Vector3 newCenter = grass.transform.position;
-        barnPlacementScript.PlaceBarnPressed (newCenter, v3Extents);
+    private Vector3 RotatePointAroundPivot (Vector3 point, Vector3 pivot, Vector3 angles) {
+        Vector3 dir = point - pivot;
+        dir = Quaternion.Euler (angles) * dir;
+        point = dir + pivot;
+        return point;
     }
 
     private Rect CreateRect () {
@@ -218,15 +303,92 @@ public class DrawSpaceScript : MonoBehaviour {
 
     private void DrawFences (Vector3 point1, Vector3 point2) {
         Vector3 direction = Vector3.Normalize (point2 - point1);
-        float fenceLength = fencePrefab.GetComponent<MeshRenderer> ().bounds.size.x;
+
         float distance = Vector3.Distance (point2, point1);
         float counter = 0;
         Vector3 pointToPlace = point1;
+
+        GameObject typeOfFence;
+        if (createRoomStatus == 0 || createRoomStatus == 2) {
+            typeOfFence = roomFencePrefab;
+        } else {
+            typeOfFence = connectorFencePrefab;
+        }
+        float fenceLength = typeOfFence.GetComponent<MeshRenderer> ().bounds.size.x;
         while (counter < distance) {
-            Instantiate (fencePrefab, pointToPlace, Quaternion.LookRotation (direction, Vector3.up) * Quaternion.Euler (0, 90, 0));
+            Instantiate (typeOfFence, pointToPlace, Quaternion.LookRotation (direction, Vector3.up) * Quaternion.Euler (0, 90, 0));
             counter += fenceLength;
             pointToPlace = point1 + (direction * counter);
         }
+    }
+
+    private void TakeOutOverlapingFences () {
+        List<Bounds> allBounds = new List<Bounds> (connectingRooms);
+        allBounds.Add (room1Bounds);
+        allBounds.Add (room2Bounds);
+
+        List<GameObject> fencesToRemove = new List<GameObject> ();
+        foreach (GameObject fence in GameObject.FindGameObjectsWithTag ("Fence")) {
+            Vector3 fencePos = fence.transform.position;
+            int count = 0;
+            foreach (Bounds potentialBound in allBounds) {
+                if (potentialBound.Contains (fencePos)) {
+                    count += 1;
+                }
+            }
+            if (count > 1) {
+                fencesToRemove.Add (fence);
+            }
+        }
+        foreach (GameObject fenceToRemove in fencesToRemove) {
+            Destroy (fenceToRemove);
+        }
+    }
+
+    private void DrawConnectorPressed () {
+        drawSpaceButton.gameObject.SetActive (true);
+        drawConnectorButton.gameObject.SetActive (false);
+        drawRoom2Button.gameObject.SetActive (false);
+        createRoomStatus = 1;
+    }
+
+    private void DrawRoom2Pressed () {
+        drawSpaceButton.gameObject.SetActive (true);
+        drawConnectorButton.gameObject.SetActive (false);
+        drawRoom2Button.gameObject.SetActive (false);
+        createRoomStatus = 2;
+    }
+
+    private void PlaceFrontGatePressed () {
+        frontGatePosition = arCamera.transform.position;
+        placeBackGateButton.gameObject.SetActive (true);
+        placeFrontGateButton.gameObject.SetActive (false);
+        placeFrontGateText.gameObject.SetActive (false);
+        placeBackGateText.gameObject.SetActive (true);
+    }
+
+    private void PlaceBackGatePressed () {
+        backGatePosition = arCamera.transform.position;
+        SaveSpace.SavePlayerSpace (this);
+        placeBackGateButton.gameObject.SetActive (false);
+        placeBackGateText.gameObject.SetActive (false);
+        sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms);
+    }
+
+    private void FoundFrontGatePressed () {
+        frontGatePosition = arCamera.transform.position;
+        foundBackGateButton.gameObject.SetActive (true);
+        foundFrontGateButton.gameObject.SetActive (false);
+        foundFrontGateText.gameObject.SetActive (false);
+        foundBackGateText.gameObject.SetActive (true);
+    }
+
+    private void FoundBackGatePressed () {
+        backGatePosition = arCamera.transform.position;
+        foundBackGateButton.gameObject.SetActive (false);
+        foundBackGateText.gameObject.SetActive (false);
+        TranslateAndRotateLoad ();
+        // sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms);
     }
 
 }

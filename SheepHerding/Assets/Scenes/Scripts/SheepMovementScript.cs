@@ -10,6 +10,10 @@ public class SheepMovementScript : MonoBehaviour {
     public Vector3 v3Center;
     public Vector3 v3Extents;
 
+    public Bounds room1Bounds;
+    public Bounds room2Bounds;
+    public List<Bounds> connectingRoomBounds;
+
     private bool isMoving = false;
     private Vector3 targetPosition;
     private Quaternion targetRotation;
@@ -75,10 +79,16 @@ public class SheepMovementScript : MonoBehaviour {
     }
 
     private bool CheckInBounds (Vector3 position) {
-        Vector3 v3CenterFlat = new Vector3 (v3Center.x, position.y, v3Center.z);
-        Vector3 v3ExtentExpanded = new Vector3 (v3Extents.x * 2f, 100f, v3Extents.z * 2f);
-        Bounds bounds = new Bounds (v3CenterFlat, v3ExtentExpanded);
-        return bounds.Contains (position);
+        List<Bounds> allBounds = new List<Bounds> (connectingRoomBounds);
+        allBounds.Add (room1Bounds);
+        allBounds.Add (room2Bounds);
+
+        foreach (Bounds bound in allBounds) {
+            if (bound.Contains (position)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void RotateSheep (Quaternion newRotation) {
@@ -96,11 +106,25 @@ public class SheepMovementScript : MonoBehaviour {
     }
 
     private Vector3 RandomPosition () {
-        Vector3 currentPosition = transform.position;
-        float randX = (float) ((rand.NextDouble () * 10.0) - 5.0);
-        float randZ = (float) ((rand.NextDouble () * 10.0) - 5.0);
-        Vector3 newPosition = currentPosition + new Vector3 ((rand.Next (1) == 0) ? randX : -randX, 0, (rand.Next (1) == 0) ? randZ : -randZ);
+        Bounds currentBounds = FindWhichBounds ();
+        Vector3 newCenter = currentBounds.center;
+        Vector3 newExtents = currentBounds.extents;
+        float randX = (newCenter.x) + (float) (rand.NextDouble () * newExtents.x * (rand.Next (2) == 1 ? 1 : -1));
+        float randZ = (newCenter.z) + (float) (rand.NextDouble () * newExtents.z * (rand.Next (2) == 1 ? 1 : -1));
+        Vector3 newPosition = new Vector3 (randX, -0.8f, randZ);
         return newPosition;
+    }
+
+    private Bounds FindWhichBounds () {
+        List<Bounds> allBounds = new List<Bounds> (connectingRoomBounds);
+        allBounds.Add (room1Bounds);
+        allBounds.Add (room2Bounds);
+        foreach (Bounds bound in allBounds) {
+            if (bound.Contains (transform.position)) {
+                return bound;
+            }
+        }
+        return allBounds[0];
     }
 
     private void HandleHerdMovements () {

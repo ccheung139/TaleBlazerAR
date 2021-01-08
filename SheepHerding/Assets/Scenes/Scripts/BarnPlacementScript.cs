@@ -40,7 +40,7 @@ public class BarnPlacementScript : MonoBehaviour {
     private void Grow () {
         if (barn.transform.localScale.x >= .08f) {
             isGrowing = false;
-            sheepSpawnScript.StartSheepHerd (v3Center, v3Extents);
+            // sheepSpawnScript.StartSheepHerd (v3Center, v3Extents);
             // drawSpaceButton.gameObject.SetActive (true);
             // sheepSpawnScript.StartSheepHerd ();
         } else {
