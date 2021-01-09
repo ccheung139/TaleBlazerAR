@@ -7,6 +7,7 @@ public class SheepSpawnScript : MonoBehaviour {
     public GameObject sheepPrefab;
     public GameObject barn;
     public BarnAndSheepScript barnAndSheepScript;
+    public LoadSpaceScript loadSpaceScript;
 
     private int totalSheep = 5;
     private Vector3 v3Center;
@@ -14,13 +15,17 @@ public class SheepSpawnScript : MonoBehaviour {
     private Bounds room1Bounds;
     private Bounds room2Bounds;
     private List<Bounds> connectingRoomBounds;
+    private Vector3 pivot;
+    private Vector3 relative;
 
-    public void StartSheepHerd (Bounds r1b, Bounds r2b, List<Bounds> crb) {
+    public void StartSheepHerd (Bounds r1b, Bounds r2b, List<Bounds> crb, Vector3 p, Vector3 r) {
         v3Center = r1b.center;
         v3Extents = r1b.extents;
         room1Bounds = r1b;
         room2Bounds = r2b;
         connectingRoomBounds = crb;
+        pivot = p;
+        relative = r;
 
         System.Random rand = new System.Random ();
         for (int i = 0; i < totalSheep; i++) {
@@ -52,13 +57,14 @@ public class SheepSpawnScript : MonoBehaviour {
         float randX = (v3Center.x) + (float) (rand.NextDouble () * v3Extents.x * (rand.Next (2) == 1 ? 1 : -1));
         float randZ = (v3Center.z) + (float) (rand.NextDouble () * v3Extents.z * (rand.Next (2) == 1 ? 1 : -1));
         Vector3 newPosition = new Vector3 (randX, 0, randZ);
-        return newPosition;
+        return loadSpaceScript.RotatePointAroundPivot (newPosition, pivot, relative);
+        // return newPosition;
     }
 
-    private bool CheckInBounds (Vector3 position) {
-        Vector3 v3CenterFlat = new Vector3 (v3Center.x, position.y, v3Center.z);
-        Vector3 v3ExtentExpanded = new Vector3 (v3Extents.x * 2f, 100f, v3Extents.z * 2f);
-        Bounds bounds = new Bounds (v3CenterFlat, v3ExtentExpanded);
-        return bounds.Contains (position);
-    }
+    // private bool CheckInBounds (Vector3 position) {
+    //     Vector3 v3CenterFlat = new Vector3 (v3Center.x, position.y, v3Center.z);
+    //     Vector3 v3ExtentExpanded = new Vector3 (v3Extents.x * 2f, 100f, v3Extents.z * 2f);
+    //     Bounds bounds = new Bounds (v3CenterFlat, v3ExtentExpanded);
+    //     return bounds.Contains (position);
+    // }
 }

@@ -7,7 +7,7 @@ public class StartOptionsScript : MonoBehaviour {
     public Button drawSpaceButton;
     public Button createSpaceButton;
     public Button loadSpaceButton;
-    public DrawSpaceScript drawSpaceScript;
+    public LoadSpaceScript loadSpaceScript;
     public Image logo;
 
     void Start () {
@@ -22,7 +22,7 @@ public class StartOptionsScript : MonoBehaviour {
 
     private void LoadSpace () {
         StartSpace ();
-        drawSpaceScript.LoadSpace ();
+        loadSpaceScript.LoadSpace ();
     }
 
     private void StartSpace () {

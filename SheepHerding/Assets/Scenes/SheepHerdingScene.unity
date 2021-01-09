@@ -507,23 +507,17 @@ MonoBehaviour:
   drawRoom2Button: {fileID: 689024641}
   placeFrontGateButton: {fileID: 49455491}
   placeBackGateButton: {fileID: 495734083}
-  foundFrontGateButton: {fileID: 1791194508}
-  foundBackGateButton: {fileID: 1615188317}
   placeFrontGateText: {fileID: 1409661980}
   placeBackGateText: {fileID: 1725906024}
-  foundFrontGateText: {fileID: 1815728942}
-  foundBackGateText: {fileID: 759691890}
   arCamera: {fileID: 1385572772}
   line1: {fileID: 6176252170909839183, guid: 6a1cd01e5677e474a9a592b63b831566, type: 3}
   sheepSpawnScript: {fileID: 1003723689}
   barnPlacementScript: {fileID: 868038081}
   barnBottom: {fileID: 374461542}
-  grass: {fileID: 1388307750}
   connectorFencePrefab: {fileID: 1389358778557431254, guid: 29b0d9c48423048f0837b3fc6b668204,
     type: 3}
   roomFencePrefab: {fileID: 8576873784877741438, guid: f5f64ca3e9c9248798e04e536f78bb5f,
     type: 3}
-  origin: {fileID: 591884248}
   v3Center: {x: 0, y: 0, z: 0}
   v3Extents: {x: 0, y: 0, z: 0}
   room1Bounds:
@@ -1079,9 +1073,8 @@ MonoBehaviour:
   drawSpaceButton: {fileID: 1237111772}
   createSpaceButton: {fileID: 655690002}
   loadSpaceButton: {fileID: 188288824}
-  drawSpaceScript: {fileID: 245458834}
+  loadSpaceScript: {fileID: 573608107}
   logo: {fileID: 970488190}
-  placeGameBounds: {fileID: 511530366}
 --- !u!1 &511530364
 GameObject:
   m_ObjectHideFlags: 0
@@ -1156,6 +1149,73 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 511530364}
   m_CullTransparentMesh: 0
+--- !u!1 &573608106
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 573608108}
+  - component: {fileID: 573608107}
+  m_Layer: 0
+  m_Name: LoadSpaceController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &573608107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 573608106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 091c749724b4b4afc835d3c332c0fd93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  drawSpaceScript: {fileID: 245458834}
+  foundFrontGateText: {fileID: 1815728942}
+  foundBackGateText: {fileID: 759691890}
+  foundFrontGateButton: {fileID: 1791194508}
+  foundBackGateButton: {fileID: 1615188317}
+  roomFencePrefab: {fileID: 8576873784877741438, guid: f5f64ca3e9c9248798e04e536f78bb5f,
+    type: 3}
+  connectorFencePrefab: {fileID: 1389358778557431254, guid: 29b0d9c48423048f0837b3fc6b668204,
+    type: 3}
+  arCamera: {fileID: 1385572772}
+  sheepSpawnScript: {fileID: 1003723689}
+  v3Center: {x: 0, y: 0, z: 0}
+  v3Extents: {x: 0, y: 0, z: 0}
+  frontGatePosition: {x: 0, y: 0, z: 0}
+  backGatePosition: {x: 0, y: 0, z: 0}
+  room1Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  room2Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  connectingRooms: []
+  pivot: {x: 0, y: 0, z: 0}
+  relative: {x: 0, y: 0, z: 0}
+--- !u!4 &573608108
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 573608106}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 13
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &591884246
 GameObject:
   m_ObjectHideFlags: 0
@@ -1795,7 +1855,7 @@ MonoBehaviour:
   barn: {fileID: 1250865953}
   sheepSpawnScript: {fileID: 1003723689}
   drawSpaceButton: {fileID: 1237111772}
-  grass: {fileID: 1388307750}
+  grass: {fileID: 0}
 --- !u!4 &868038082
 Transform:
   m_ObjectHideFlags: 0
@@ -2166,6 +2226,7 @@ MonoBehaviour:
     type: 3}
   barn: {fileID: 1250865953}
   barnAndSheepScript: {fileID: 811284876}
+  loadSpaceScript: {fileID: 573608107}
 --- !u!1 &1021963411
 GameObject:
   m_ObjectHideFlags: 0
@@ -2855,87 +2916,6 @@ Transform:
   m_Father: {fileID: 591884247}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1388307750
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1388307752}
-  - component: {fileID: 1388307751}
-  m_Layer: 0
-  m_Name: Grass
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!212 &1388307751
-SpriteRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1388307750}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 783807fa9834d4da1b7846d55b068e28, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 8.58, y: 1.98}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
-  m_SpriteSortPoint: 0
---- !u!4 &1388307752
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1388307750}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.35000002, y: -0.80625, z: 0.0959999}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 13
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &1409661978
 GameObject:
   m_ObjectHideFlags: 0
@@ -4463,6 +4443,49 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1967852653
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1967852655}
+  - component: {fileID: 1967852654}
+  m_Layer: 0
+  m_Name: RectangleCalcController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1967852654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1967852653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6da105629081946a29a70e65b239c796, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1967852655
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1967852653}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2013323314
 GameObject:
