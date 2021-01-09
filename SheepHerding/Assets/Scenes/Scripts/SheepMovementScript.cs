@@ -9,6 +9,9 @@ public class SheepMovementScript : MonoBehaviour {
     public BarnAndSheepScript barnAndSheepScript;
     public Vector3 v3Center;
     public Vector3 v3Extents;
+    public LoadSpaceScript loadSpaceScript;
+    public Vector3 pivot;
+    public Vector3 relative;
 
     public Bounds room1Bounds;
     public Bounds room2Bounds;
@@ -83,6 +86,7 @@ public class SheepMovementScript : MonoBehaviour {
         allBounds.Add (room1Bounds);
         allBounds.Add (room2Bounds);
 
+        // Vector3 rotatedPosition = loadSpaceScript.RotatePointAroundPivot (position, pivot, relative);
         foreach (Bounds bound in allBounds) {
             if (bound.Contains (position)) {
                 return true;
@@ -102,7 +106,8 @@ public class SheepMovementScript : MonoBehaviour {
         while (!CheckInBounds (newPosition)) {
             newPosition = RandomPosition ();
         }
-        return newPosition;
+        Vector3 rotatedPos = loadSpaceScript.RotatePointAroundPivot (newPosition, pivot, relative);
+        return rotatedPos;
     }
 
     private Vector3 RandomPosition () {
@@ -120,7 +125,8 @@ public class SheepMovementScript : MonoBehaviour {
         allBounds.Add (room1Bounds);
         allBounds.Add (room2Bounds);
         foreach (Bounds bound in allBounds) {
-            if (bound.Contains (transform.position)) {
+            Vector3 rotatedPos = loadSpaceScript.RotatePointAroundPivot (transform.position, pivot, -relative);
+            if (bound.Contains (rotatedPos)) {
                 return bound;
             }
         }
@@ -139,7 +145,8 @@ public class SheepMovementScript : MonoBehaviour {
 
         herdPosition = cameraFlatVector + (direction * 1.3f);
         herdPosition.y = transform.position.y;
-        if (!CheckInBounds (herdPosition)) {
+        Vector3 rotatedPos = loadSpaceScript.RotatePointAroundPivot (herdPosition, pivot, -relative);
+        if (!CheckInBounds (rotatedPos)) {
             isHerding = false;
             isMoving = false;
         }

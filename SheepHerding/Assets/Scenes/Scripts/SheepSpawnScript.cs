@@ -51,6 +51,9 @@ public class SheepSpawnScript : MonoBehaviour {
         sheepMovementScript.room1Bounds = room1Bounds;
         sheepMovementScript.room2Bounds = room2Bounds;
         sheepMovementScript.connectingRoomBounds = connectingRoomBounds;
+        sheepMovementScript.loadSpaceScript = loadSpaceScript;
+        sheepMovementScript.pivot = pivot;
+        sheepMovementScript.relative = relative;
     }
 
     private Vector3 GenerateRandomPoint (System.Random rand) {
