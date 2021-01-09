@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class StartOptionsScript : MonoBehaviour {
     public Button drawSpaceButton;
+    public Button placeFrontGateButton;
+
     public Button createSpaceButton;
     public Button loadSpaceButton;
     public LoadSpaceScript loadSpaceScript;
@@ -16,7 +18,7 @@ public class StartOptionsScript : MonoBehaviour {
     }
 
     private void CreateSpacePressed () {
-        drawSpaceButton.gameObject.SetActive (true);
+        placeFrontGateButton.gameObject.SetActive (true);
         StartSpace ();
     }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR.ARFoundation;
 
 public class DrawSpaceScript : MonoBehaviour {
     public Button drawSpaceButton;
@@ -20,6 +21,9 @@ public class DrawSpaceScript : MonoBehaviour {
     public GameObject barnBottom;
     public GameObject connectorFencePrefab;
     public GameObject roomFencePrefab;
+
+    public ARSessionOrigin origin;
+    public GameObject thing;
 
     private Vector3 v3FrontTopLeft;
     private Vector3 v3FrontTopRight;
@@ -104,9 +108,11 @@ public class DrawSpaceScript : MonoBehaviour {
         } else {
             room2Bounds = BoundsHelper ();
             TakeOutOverlapingFences ();
-            placeFrontGateButton.gameObject.SetActive (true);
-            placeFrontGateText.gameObject.SetActive (true);
+            // placeFrontGateButton.gameObject.SetActive (true);
+            // placeFrontGateText.gameObject.SetActive (true);
 
+            SaveSpace.SavePlayerSpace (this);
+            sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms);
         }
     }
 
@@ -241,10 +247,17 @@ public class DrawSpaceScript : MonoBehaviour {
 
     private void PlaceBackGatePressed () {
         backGatePosition = arCamera.transform.position;
-        SaveSpace.SavePlayerSpace (this);
+
+        Vector3 dir = backGatePosition - frontGatePosition;
+        Quaternion rel = Quaternion.LookRotation (dir);
+        origin.MakeContentAppearAt (thing.transform, frontGatePosition, rel);
+
+        
         placeBackGateButton.gameObject.SetActive (false);
         placeBackGateText.gameObject.SetActive (false);
-        sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms, new Vector3 (0, 0, 0), new Vector3 (0, 0, 0));
+
+        drawSpaceButton.gameObject.SetActive (true);
+        // sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms);
     }
 
 }
