@@ -6,28 +6,15 @@ using UnityEngine.XR.ARFoundation;
 
 public class LoadSpaceScript : MonoBehaviour {
     public DrawSpaceScript drawSpaceScript;
+    public FenceScript fenceScript;
     public Image foundFrontGateText;
     public Image foundBackGateText;
     public Button foundFrontGateButton;
     public Button foundBackGateButton;
-    public GameObject roomFencePrefab;
-    public GameObject connectorFencePrefab;
     public Camera arCamera;
     public SheepSpawnScript sheepSpawnScript;
     public ARSessionOrigin origin;
     public GameObject thing;
-
-    private Vector3 v3FrontTopLeft;
-    private Vector3 v3FrontTopRight;
-    private Vector3 v3FrontBottomLeft;
-    private Vector3 v3FrontBottomRight;
-    private Vector3 v3BackTopLeft;
-    private Vector3 v3BackTopRight;
-    private Vector3 v3BackBottomLeft;
-    private Vector3 v3BackBottomRight;
-
-    public Vector3 v3Center;
-    public Vector3 v3Extents;
 
     public Vector3 frontGatePosition;
     public Vector3 backGatePosition;
@@ -36,7 +23,6 @@ public class LoadSpaceScript : MonoBehaviour {
     public Bounds room2Bounds;
     public List<Bounds> connectingRooms = new List<Bounds> ();
 
-    public Quaternion firstRotation;
     public Vector3 pivot;
     public Vector3 relative;
 
@@ -46,9 +32,6 @@ public class LoadSpaceScript : MonoBehaviour {
     }
 
     private void FoundFrontGatePressed () {
-        // firstRotation = arCamera.transform.rotation;
-        firstRotation = Quaternion.Euler (0, arCamera.transform.eulerAngles.y, 0);
-
         frontGatePosition = arCamera.transform.position;
         foundBackGateButton.gameObject.SetActive (true);
         foundFrontGateButton.gameObject.SetActive (false);
@@ -74,7 +57,7 @@ public class LoadSpaceScript : MonoBehaviour {
     private void LoadCenterAndExtents (out Bounds bound, float[] centerData, float[] extentsData, int status) {
         Vector3 center;
         center.x = centerData[0];
-        center.y = centerData[1];
+        center.y = -0.8f;
         center.z = centerData[2];
 
         Vector3 extents;
@@ -95,10 +78,10 @@ public class LoadSpaceScript : MonoBehaviour {
         bottomLeft.x -= extents.x / 2f;
         bottomLeft.z -= extents.z / 2f;
 
-        drawSpaceScript.DrawFences (topRight, topLeft, status);
-        drawSpaceScript.DrawFences (topLeft, bottomLeft, status);
-        drawSpaceScript.DrawFences (bottomLeft, bottomRight, status);
-        drawSpaceScript.DrawFences (bottomRight, topRight, status);
+        fenceScript.DrawFences (topRight, topLeft, status);
+        fenceScript.DrawFences (topLeft, bottomLeft, status);
+        fenceScript.DrawFences (bottomLeft, bottomRight, status);
+        fenceScript.DrawFences (bottomRight, topRight, status);
 
         bound = new Bounds (center, extents);
     }
@@ -118,38 +101,25 @@ public class LoadSpaceScript : MonoBehaviour {
     private void TranslateAndRotateLoad () {
         SpaceData data = SaveSpace.LoadPlayerSpace ();
 
-        // Vector3 oldFront = FloatToVector (data.frontGatePosition);
-        // Vector3 oldBack = FloatToVector (data.backGatePosition);
-        // Vector3 oldDirection = oldBack - oldFront;
-        // oldDirection.y = 0;
+        Vector3 oldFront = FloatToVector (data.frontGatePosition);
+        Vector3 oldBack = FloatToVector (data.backGatePosition);
+        Vector3 oldDirection = oldBack - oldFront;
+        oldDirection.y = 0;
 
-        // Vector3 newDirection = backGatePosition - frontGatePosition;
-        // newDirection.y = 0;
+        Vector3 newDirection = backGatePosition - frontGatePosition;
+        newDirection.y = 0;
 
-        // float angles = Vector3.SignedAngle (oldDirection, newDirection, Vector3.up);
-        // relative = new Vector3 (0, angles, 0);
+        float angles = Vector3.SignedAngle (oldDirection, newDirection, Vector3.up);
+        relative = new Vector3 (0, angles, 0);
 
-        // Vector3 differencePoint = frontGatePosition - oldFront;
-        // Vector3 newOrigin = RotatePointAroundPivot (differencePoint, frontGatePosition, relative);
+        Vector3 differencePoint = frontGatePosition - oldFront;
+        Vector3 newOrigin = RotatePointAroundPivot (differencePoint, frontGatePosition, relative);
+        Quaternion rot = Quaternion.Euler (0, angles, 0);
 
-        // Quaternion rot = Quaternion.Euler (0, angles, 0);
-
-        // Quaternion a = Quaternion.LookRotation (oldFront);
-        // Quaternion b = Quaternion.LookRotation (frontGatePosition);
-        // Quaternion rel = Quaternion.Inverse (a) * b;
-
-        Vector3 dir = backGatePosition - frontGatePosition;
-        Quaternion rel = Quaternion.LookRotation (dir);
-
-        origin.MakeContentAppearAt (thing.transform, frontGatePosition, rel);
-        // Transform content = origin.transform.Find("Content Placement Offset");
-        // content.transform.rotation = rot;
+        origin.MakeContentAppearAt (thing.transform, newOrigin, rot);
 
         LoadCenterAndExtents (out room1Bounds, data.room1Center, data.room1Extents, 0);
-        // LoadFences (room1Bounds);
-
         LoadCenterAndExtents (out room2Bounds, data.room2Center, data.room2Extents, 2);
-        // // LoadFences (room2Bounds);
 
         for (int i = 0; i < data.connectingRoomCenters.GetLength (0); i++) {
             Bounds connectBounds;
@@ -163,11 +133,10 @@ public class LoadSpaceScript : MonoBehaviour {
             connectExtent[1] = data.connectingRoomExtents[i, 1];
             connectExtent[2] = data.connectingRoomExtents[i, 2];
             LoadCenterAndExtents (out connectBounds, connectCenter, connectExtent, 1);
-            // LoadFences (connectBounds);
+
             connectingRooms.Add (connectBounds);
         }
-
-        TakeOutOverlapingFences ();
+        fenceScript.TakeOutOverlapingFences (connectingRooms, room1Bounds, room2Bounds);
     }
 
     private Vector3 FloatToVector (float[] f) {
@@ -176,36 +145,5 @@ public class LoadSpaceScript : MonoBehaviour {
         ret.y = f[1];
         ret.z = f[2];
         return ret;
-    }
-
-    private void PositionFinding () {
-        float yPoint = -0.8f;
-        v3FrontBottomLeft = new Vector3 (v3Center.x - v3Extents.x, yPoint, v3Center.z - v3Extents.z); // Front bottom left corner
-        v3FrontBottomRight = new Vector3 (v3Center.x + v3Extents.x, yPoint, v3Center.z - v3Extents.z); // Front bottom right corner
-        v3BackBottomLeft = new Vector3 (v3Center.x - v3Extents.x, yPoint, v3Center.z + v3Extents.z); // Back bottom left corner
-        v3BackBottomRight = new Vector3 (v3Center.x + v3Extents.x, yPoint, v3Center.z + v3Extents.z); // Back bottom right corner
-    }
-
-    public void TakeOutOverlapingFences () {
-        List<Bounds> allBounds = new List<Bounds> (connectingRooms);
-        allBounds.Add (room1Bounds);
-        allBounds.Add (room2Bounds);
-
-        List<GameObject> fencesToRemove = new List<GameObject> ();
-        foreach (GameObject fence in GameObject.FindGameObjectsWithTag ("Fence")) {
-            Vector3 fencePos = fence.transform.position;
-            int count = 0;
-            foreach (Bounds potentialBound in allBounds) {
-                if (potentialBound.Contains (fencePos)) {
-                    count += 1;
-                }
-            }
-            if (count > 1) {
-                fencesToRemove.Add (fence);
-            }
-        }
-        foreach (GameObject fenceToRemove in fencesToRemove) {
-            Destroy (fenceToRemove);
-        }
     }
 }

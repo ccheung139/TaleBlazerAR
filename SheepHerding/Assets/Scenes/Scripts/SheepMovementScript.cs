@@ -4,9 +4,7 @@ using UnityEngine;
 
 public class SheepMovementScript : MonoBehaviour {
     public Camera arCamera;
-    public GameObject barn;
     public System.Random rand;
-    public BarnAndSheepScript barnAndSheepScript;
     public Vector3 v3Center;
     public Vector3 v3Extents;
 
@@ -25,6 +23,19 @@ public class SheepMovementScript : MonoBehaviour {
     private float stillTimer = 0;
     private float moveAfterSeconds = 5.0f;
 
+    private bool isMovingToGrass = false;
+    private bool eatingGrass = false;
+    private Vector3 targetGrassPos;
+    private Quaternion targetGrassRot;
+    private GameObject grassBeingEaten;
+
+    private float eatingTimer = 0;
+    private float eatingMaxTime = 10.0f;
+
+    private bool isFull = false;
+    private float fullTimer = 0;
+    private float fullMaxTime = 10.0f;
+
     void Update () {
         if (isHerding) {
             HandleHerdMovements ();
@@ -33,19 +44,44 @@ public class SheepMovementScript : MonoBehaviour {
             if (distance < 1.2f) {
                 isHerding = true;
                 isMoving = false;
+
+                if (isMovingToGrass || eatingGrass) {
+                    grassBeingEaten.GetComponent<WateredGrassScript> ().UnclaimGrass ();
+                    eatingGrass = false;
+                    isMovingToGrass = false;
+                    eatingTimer = 0;
+                }
+
                 stillTimer = 0;
                 herdPosition = GenerateHerdPosition ();
                 herdRotation = Quaternion.LookRotation (herdPosition - transform.position);
                 return;
             }
-            HandleNormalMovements ();
+            if (isMovingToGrass) {
+                HandleGrassMovements ();
+            } else if (eatingGrass) {
+                HandleEatingGrass ();
+            } else {
+                if (isFull) {
+                    if (fullTimer < fullMaxTime) {
+                        fullTimer += Time.deltaTime;
+                    } else {
+                        fullTimer = 0.0f;
+                        isFull = false;
+                    }
+                } else {
+                    CheckGrownGrass ();
+                }
+                HandleNormalMovements ();
+            }
+
         }
 
     }
 
     private void HandleNormalMovements () {
         if (isMoving) {
-            MoveSheep (targetPosition, .5f);
+            MoveSheep (targetPosition, targetRotation, .5f);
             RotateSheep (targetRotation);
         } else {
             if (stillTimer >= moveAfterSeconds) {
@@ -60,22 +96,32 @@ public class SheepMovementScript : MonoBehaviour {
         }
     }
 
-    private void MoveSheep (Vector3 newPosition, float movementSpeed) {
+    private void HandleHerdMovements () {
+        MoveSheep (herdPosition, herdRotation, .8f);
+        RotateSheep (herdRotation);
+    }
 
-        if (transform.position == newPosition || barnAndSheepScript.HittingSidesOfBarn (newPosition)) {
+    private void HandleGrassMovements () {
+        MoveSheep (targetGrassPos, targetGrassRot, .8f);
+        RotateSheep (targetGrassRot);
+    }
+
+    private void MoveSheep (Vector3 newPosition, Quaternion newRotation, float movementSpeed) {
+
+        if (transform.position == newPosition && transform.rotation == newRotation) {
+            if (isMovingToGrass) {
+                eatingGrass = true;
+            }
+
             isMoving = false;
             isHerding = false;
+            isMovingToGrass = false;
             stillTimer = 0;
             return;
         }
 
         float step = movementSpeed * Time.deltaTime;
         transform.position = Vector3.MoveTowards (transform.position, newPosition, step);
-
-        if (barnAndSheepScript.InsideBarn (newPosition)) {
-
-            Destroy (gameObject);
-        }
     }
 
     private bool CheckInBounds (Vector3 position) {
@@ -83,8 +129,11 @@ public class SheepMovementScript : MonoBehaviour {
         allBounds.Add (room1Bounds);
         allBounds.Add (room2Bounds);
 
+        Vector3 direction = Vector3.Normalize (position - transform.position);
+        Vector3 extendedPosition = position + direction * 0.2f;
+
         foreach (Bounds bound in allBounds) {
-            if (bound.Contains (position)) {
+            if (bound.Contains (extendedPosition)) {
                 return true;
             }
         }
@@ -127,11 +176,6 @@ public class SheepMovementScript : MonoBehaviour {
         return allBounds[0];
     }
 
-    private void HandleHerdMovements () {
-        MoveSheep (herdPosition, .8f);
-        RotateSheep (herdRotation);
-    }
-
     private Vector3 GenerateHerdPosition () {
         Vector3 sheepFlatVector = new Vector3 (transform.position.x, 0, transform.position.z);
         Vector3 cameraFlatVector = new Vector3 (arCamera.transform.position.x, 0, arCamera.transform.position.z);
@@ -144,5 +188,45 @@ public class SheepMovementScript : MonoBehaviour {
             isMoving = false;
         }
         return herdPosition;
+    }
+
+    private void CheckGrownGrass () {
+        if (room1Bounds.Contains (transform.position)) {
+            GrassBoundHelper (room1Bounds);
+        } else if (room2Bounds.Contains (transform.position)) {
+            GrassBoundHelper (room2Bounds);
+        }
+    }
+
+    private void GrassBoundHelper (Bounds bound) {
+        GameObject[] allGrass = GameObject.FindGameObjectsWithTag ("Grass");
+        foreach (GameObject grass in allGrass) {
+            WateredGrassScript wgs = grass.GetComponent<WateredGrassScript> ();
+            if (wgs != null) {
+                bool eligible = wgs.beingEaten == false && grass.transform.localScale.x > 0.2f;
+                if (eligible && bound.Contains (grass.transform.position)) {
+                    wgs.ClaimGrass ();
+                    grassBeingEaten = grass;
+                    isMovingToGrass = true;
+
+                    Vector3 direction = transform.position - grass.transform.position;
+                    targetGrassPos = grass.transform.position + Vector3.Normalize (direction) * 0.3f;
+                    targetGrassRot = Quaternion.LookRotation (targetGrassPos - transform.position);
+                    return;
+                }
+            }
+
+        }
+    }
+
+    private void HandleEatingGrass () {
+        if (eatingTimer < eatingMaxTime) {
+            eatingTimer += Time.deltaTime;
+        } else {
+            eatingGrass = false;
+            eatingTimer = 0.0f;
+            Destroy (grassBeingEaten);
+            isFull = true;
+        }
     }
 }

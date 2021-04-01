@@ -18,7 +18,7 @@ public class StartOptionsScript : MonoBehaviour {
     }
 
     private void CreateSpacePressed () {
-        placeFrontGateButton.gameObject.SetActive (true);
+        drawSpaceButton.gameObject.SetActive (true);
         StartSpace ();
     }
 

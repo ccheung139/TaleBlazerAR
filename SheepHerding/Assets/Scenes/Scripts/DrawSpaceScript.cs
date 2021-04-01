@@ -18,9 +18,8 @@ public class DrawSpaceScript : MonoBehaviour {
     public GameObject line1;
     public SheepSpawnScript sheepSpawnScript;
     public BarnPlacementScript barnPlacementScript;
-    public GameObject barnBottom;
-    public GameObject connectorFencePrefab;
-    public GameObject roomFencePrefab;
+    public FenceScript fenceScript;
+
 
     public ARSessionOrigin origin;
     public GameObject thing;
@@ -91,10 +90,10 @@ public class DrawSpaceScript : MonoBehaviour {
         DrawBox ();
         drawFinishButton.gameObject.SetActive (false);
 
-        DrawFences (v3FrontBottomLeft, v3FrontBottomRight, createRoomStatus);
-        DrawFences (v3FrontBottomRight, v3BackBottomRight, createRoomStatus);
-        DrawFences (v3BackBottomRight, v3BackBottomLeft, createRoomStatus);
-        DrawFences (v3BackBottomLeft, v3FrontBottomLeft, createRoomStatus);
+        fenceScript.DrawFences (v3FrontBottomLeft, v3FrontBottomRight, createRoomStatus);
+        fenceScript.DrawFences (v3FrontBottomRight, v3BackBottomRight, createRoomStatus);
+        fenceScript.DrawFences (v3BackBottomRight, v3BackBottomLeft, createRoomStatus);
+        fenceScript.DrawFences (v3BackBottomLeft, v3FrontBottomLeft, createRoomStatus);
         ClearLines ();
 
         if (createRoomStatus == 0) {
@@ -107,12 +106,12 @@ public class DrawSpaceScript : MonoBehaviour {
             drawRoom2Button.gameObject.SetActive (true);
         } else {
             room2Bounds = BoundsHelper ();
-            TakeOutOverlapingFences ();
-            // placeFrontGateButton.gameObject.SetActive (true);
-            // placeFrontGateText.gameObject.SetActive (true);
+            fenceScript.TakeOutOverlapingFences (connectingRooms, room1Bounds, room2Bounds);
+            placeFrontGateButton.gameObject.SetActive (true);
+            placeFrontGateText.gameObject.SetActive (true);
 
-            SaveSpace.SavePlayerSpace (this);
-            sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms);
+            // SaveSpace.SavePlayerSpace (this);
+            // sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms);
         }
     }
 
@@ -179,50 +178,6 @@ public class DrawSpaceScript : MonoBehaviour {
         return new Rect (x, z, width, height);
     }
 
-    public void DrawFences (Vector3 point1, Vector3 point2, int status) {
-        Vector3 direction = Vector3.Normalize (point2 - point1);
-
-        float distance = Vector3.Distance (point2, point1);
-        float counter = 0;
-        Vector3 pointToPlace = point1;
-
-        GameObject typeOfFence;
-        if (status == 0 || status == 2) {
-            typeOfFence = roomFencePrefab;
-        } else {
-            typeOfFence = connectorFencePrefab;
-        }
-        float fenceLength = typeOfFence.GetComponent<MeshRenderer> ().bounds.size.x;
-        while (counter < distance) {
-            Instantiate (typeOfFence, pointToPlace, Quaternion.LookRotation (direction, Vector3.up) * Quaternion.Euler (0, 90, 0));
-            counter += fenceLength;
-            pointToPlace = point1 + (direction * counter);
-        }
-    }
-
-    public void TakeOutOverlapingFences () {
-        List<Bounds> allBounds = new List<Bounds> (connectingRooms);
-        allBounds.Add (room1Bounds);
-        allBounds.Add (room2Bounds);
-
-        List<GameObject> fencesToRemove = new List<GameObject> ();
-        foreach (GameObject fence in GameObject.FindGameObjectsWithTag ("Fence")) {
-            Vector3 fencePos = fence.transform.position;
-            int count = 0;
-            foreach (Bounds potentialBound in allBounds) {
-                if (potentialBound.Contains (fencePos)) {
-                    count += 1;
-                }
-            }
-            if (count > 1) {
-                fencesToRemove.Add (fence);
-            }
-        }
-        foreach (GameObject fenceToRemove in fencesToRemove) {
-            Destroy (fenceToRemove);
-        }
-    }
-
     private void DrawConnectorPressed () {
         drawSpaceButton.gameObject.SetActive (true);
         drawConnectorButton.gameObject.SetActive (false);
@@ -248,16 +203,16 @@ public class DrawSpaceScript : MonoBehaviour {
     private void PlaceBackGatePressed () {
         backGatePosition = arCamera.transform.position;
 
-        Vector3 dir = backGatePosition - frontGatePosition;
-        Quaternion rel = Quaternion.LookRotation (dir);
-        origin.MakeContentAppearAt (thing.transform, frontGatePosition, rel);
+        // Vector3 dir = backGatePosition - frontGatePosition;
+        // Quaternion rel = Quaternion.LookRotation (dir);
+        // origin.MakeContentAppearAt (thing.transform, frontGatePosition, rel);
 
-        
         placeBackGateButton.gameObject.SetActive (false);
         placeBackGateText.gameObject.SetActive (false);
 
-        drawSpaceButton.gameObject.SetActive (true);
-        // sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms);
+        // drawSpaceButton.gameObject.SetActive (true);
+        SaveSpace.SavePlayerSpace (this);
+        sheepSpawnScript.StartSheepHerd (room1Bounds, room2Bounds, connectingRooms);
     }
 
 }

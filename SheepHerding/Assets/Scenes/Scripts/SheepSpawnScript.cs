@@ -1,13 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SheepSpawnScript : MonoBehaviour {
     public Camera arCamera;
     public GameObject sheepPrefab;
-    public GameObject barn;
-    public BarnAndSheepScript barnAndSheepScript;
     public LoadSpaceScript loadSpaceScript;
+    public GrassPlacementScript grassPlacementScript;
+    public Button plantGrassButton;
+    public Button openWaterCanButton;
 
     private int totalSheep = 5;
     private Vector3 v3Center;
@@ -22,13 +24,17 @@ public class SheepSpawnScript : MonoBehaviour {
         room1Bounds = r1b;
         room2Bounds = r2b;
         connectingRoomBounds = crb;
-        // pivot = p;
-        // relative = r;
 
         System.Random rand = new System.Random ();
         for (int i = 0; i < totalSheep; i++) {
             SpawnNewSheep (rand);
         }
+
+        plantGrassButton.gameObject.SetActive (true);
+        openWaterCanButton.gameObject.SetActive (true);
+
+        grassPlacementScript.room1Bounds = room1Bounds;
+        grassPlacementScript.room2Bounds = room2Bounds;
     }
 
     private void SpawnNewSheep (System.Random rand) {
@@ -41,9 +47,7 @@ public class SheepSpawnScript : MonoBehaviour {
 
         SheepMovementScript sheepMovementScript = newSheep.GetComponent<SheepMovementScript> ();
         sheepMovementScript.arCamera = arCamera;
-        sheepMovementScript.barn = barn;
         sheepMovementScript.rand = rand;
-        sheepMovementScript.barnAndSheepScript = barnAndSheepScript;
         sheepMovementScript.v3Center = v3Center;
         sheepMovementScript.v3Extents = v3Extents;
         sheepMovementScript.room1Bounds = room1Bounds;

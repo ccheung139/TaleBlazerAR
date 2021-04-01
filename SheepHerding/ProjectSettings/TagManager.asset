@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Line
   - Fence
+  - Sheep
+  - Grass
   layers:
   - Default
   - TransparentFX
