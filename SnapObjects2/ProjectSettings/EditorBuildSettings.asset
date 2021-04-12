@@ -11,4 +11,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/CustomActions.unity
     guid: 01bd3533656804313afff9595554fb09
-  m_configObjects: {}
+  m_configObjects:
+    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 5e85ff40b6a034227b04079706133a22,
+      type: 2}
+    UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: 624fe85f9f7b343748d1625963c0c7be,
+      type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: e8095cc9dec124dc99f84efdd886cae2,
+      type: 2}

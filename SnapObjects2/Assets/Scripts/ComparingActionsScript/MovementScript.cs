@@ -5,6 +5,8 @@ using UnityEngine;
 public class MovementScript : MonoBehaviour {
     public Camera arCamera;
 
+    private float movementSpeed = .02f;
+
     void Update () {
         HandleTouch ();
     }
@@ -41,34 +43,49 @@ public class MovementScript : MonoBehaviour {
     }
 
     private void KeyBoardMovement () {
-        float speed = 1.0f;
-        float rotateSpeed = 30.0f;
-        Vector3 pos = arCamera.transform.position;
+        Rotate ();
+        Movement ();
+    }
+
+    private void Movement () {
+        float speed = 3.0f;
+
+        Vector3 pos = transform.position;
         if (Input.GetKey ("w")) {
-            pos.z += speed * Time.deltaTime;
+            pos += transform.forward * movementSpeed;
         }
         if (Input.GetKey ("s")) {
-            pos.z -= speed * Time.deltaTime;
+            pos += transform.forward * -movementSpeed;
         }
         if (Input.GetKey ("d")) {
-            pos.x += speed * Time.deltaTime;
+            pos += transform.right * movementSpeed;
         }
         if (Input.GetKey ("a")) {
-            pos.x -= speed * Time.deltaTime;
+            pos += transform.right * -movementSpeed;
         }
-        if (Input.GetKey ("r")) {
-            pos.y += speed * Time.deltaTime;
-        }
-        if (Input.GetKey ("f")) {
-            pos.y -= speed * Time.deltaTime;
-        }
-        arCamera.transform.position = pos;
-
         if (Input.GetKey ("e")) {
-            arCamera.transform.Rotate (Vector3.right, rotateSpeed * Time.deltaTime);
+            pos += transform.up * movementSpeed;
         }
         if (Input.GetKey ("q")) {
-            arCamera.transform.Rotate (-Vector3.right, rotateSpeed * Time.deltaTime);
+            pos += transform.up * -movementSpeed;
+        }
+        transform.position = pos;
+    }
+
+    private void Rotate () {
+        float rotateSpeed = 60.0f;
+
+        if (Input.GetKey ("up")) {
+            transform.Rotate (-Vector3.right, rotateSpeed * Time.deltaTime);
+        }
+        if (Input.GetKey ("down")) {
+            transform.Rotate (Vector3.right, rotateSpeed * Time.deltaTime);
+        }
+        if (Input.GetKey ("right")) {
+            transform.Rotate (Vector3.up, rotateSpeed * Time.deltaTime);
+        }
+        if (Input.GetKey ("left")) {
+            transform.Rotate (-Vector3.up, rotateSpeed * Time.deltaTime);
         }
     }
 }

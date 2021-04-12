@@ -203,5 +203,7 @@ public class CustomReactionScript : MonoBehaviour {
         positions = new Vector3[0];
         times = new List<float> ();
         rotations = new List<Quaternion> ();
+        reactMove = false;
+        i = 0;
     }
 }
