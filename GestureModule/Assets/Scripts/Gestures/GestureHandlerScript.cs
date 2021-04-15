@@ -11,6 +11,12 @@ public class GestureHandlerScript : MonoBehaviour
     public StayPutGestureScript stayPutGestureScript;
     public PunchGestureScript punchGestureScript;
     public ThrowGestureScript throwGestureScript;
+    public KeyTurnGestureScript keyTurnGestureScript;
+    public RaiseGestureScript raiseGestureScript;
+    public SlashGestureScript slashGestureScript;
+    public WaxOnGestureScript waxOnGestureScript;
+    public DigGestureScript digGestureScript;
+    public WaveGestureScript waveGestureScript;
     public Text gestureText;
 
     // public GameObject comeTutorialRobot;
@@ -23,11 +29,14 @@ public class GestureHandlerScript : MonoBehaviour
     private List<float> pointsInTime = new List<float>();
     private List<float> shakeTimes = new List<float>();
     private List<float> rotations = new List<float>();
+    private List<Vector3> eulerAngles = new List<Vector3>();
 
     private float timer = 0.0f;
     private float timerTotal = 0.01f;
 
     private Vector3 forwardVector;
+    private Vector3 upVector;
+    private Vector3 rightVector;
 
     void Start()
     {
@@ -49,7 +58,10 @@ public class GestureHandlerScript : MonoBehaviour
             points.Add(arCamera.transform.position);
             pointsInTime.Add(Time.time);
             rotations.Add(Vector3.Dot(arCamera.transform.up, Vector3.up));
+            eulerAngles.Add(arCamera.transform.eulerAngles);
             timer = 0.0f;
+
+            // Debug.Log(arCamera.transform.eulerAngles);
         }
         else
         {
@@ -62,18 +74,35 @@ public class GestureHandlerScript : MonoBehaviour
     {
         isPressing = true;
         forwardVector = arCamera.transform.forward;
+        upVector = arCamera.transform.up;
+        rightVector = arCamera.transform.right;
     }
 
     public void ReleasedHold()
     {
+        if (points.Count == 0)
+        {
+            points = new List<Vector3>();
+            pointsInTime = new List<float>();
+            shakeTimes = new List<float>();
+            rotations = new List<float>();
+            eulerAngles = new List<Vector3>();
+            return;
+        }
+
         isPressing = false;
 
         bool isComeHere = comeHereGestureScript.CheckComeHere(points, pointsInTime, shakeTimes);
         bool isFollow = followMeGestureScript.CheckFollowMe(points, shakeTimes);
         bool isStay = stayPutGestureScript.CheckStayPut(points, pointsInTime, rotations);
         bool isPunch = punchGestureScript.CheckPunch(points, pointsInTime, forwardVector);
-        bool isThrow = throwGestureScript.CheckThrow(points, pointsInTime, forwardVector);
-
+        bool isThrow = throwGestureScript.CheckThrow(points, pointsInTime, upVector, forwardVector);
+        bool isKeyTurn = keyTurnGestureScript.CheckKeyTurn(eulerAngles, points);
+        bool isRaise = raiseGestureScript.CheckRaise(points, pointsInTime);
+        bool isSlash = slashGestureScript.CheckSlash(points, pointsInTime, upVector, forwardVector, rightVector);
+        bool isWaxOn = waxOnGestureScript.CheckWaxOn(points, pointsInTime, upVector, rightVector);
+        bool isDig = digGestureScript.CheckDig(points, pointsInTime, upVector, rightVector);
+        bool isWave = waveGestureScript.CheckWave(eulerAngles, points, pointsInTime);
 
         if (isPunch)
         {
@@ -95,11 +124,35 @@ public class GestureHandlerScript : MonoBehaviour
         {
             gestureText.text = "Threw";
         }
+        else if (isKeyTurn)
+        {
+            gestureText.text = "Key Turned";
+        }
+        else if (isWaxOn)
+        {
+            gestureText.text = "Wax On";
+        }
+        else if (isSlash)
+        {
+            gestureText.text = "Slashed";
+        }
+        else if (isRaise)
+        {
+            gestureText.text = "Raised";
+        }
+        else if (isDig)
+        {
+            gestureText.text = "Dug";
+        } else if (isWave) {
+            gestureText.text = "Waved";
+        }
+
 
         points = new List<Vector3>();
         pointsInTime = new List<float>();
         shakeTimes = new List<float>();
         rotations = new List<float>();
+        eulerAngles = new List<Vector3>();
         // gameObject.SetActive (false);
     }
 

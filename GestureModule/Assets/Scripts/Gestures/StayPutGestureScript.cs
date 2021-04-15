@@ -33,7 +33,7 @@ public class StayPutGestureScript : MonoBehaviour {
             maxTime = CalculateTime (pointTimes[pointTimes.Count - 1], earliestTime, maxTime);
         }
 
-        return maxTime > 0.5f;
+        return maxTime > 0.5f && loweredArm;
     }
 
     private float CalculateTime (float pointTime, float earliestTime, float maxTime) {
