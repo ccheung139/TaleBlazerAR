@@ -61,7 +61,9 @@ public class SlashGestureScript : MonoBehaviour
                 {
                     if (angle < 90 || angle > 180)
                     {
-                        return false;
+                        if (GetForwardDistance(slashPoint, point, upVector) > 0.2f) {
+                            return false;
+                        }
                     }
                 }
             }

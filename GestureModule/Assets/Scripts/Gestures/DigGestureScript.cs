@@ -21,7 +21,7 @@ public class DigGestureScript : MonoBehaviour
             Vector3 point = points[i];
             float pointTime = pointTimes[i];
 
-            if (GetRightDistance(points[0], point, rightVector) > 0.2f || GetRightDistance(points[0], point, -rightVector) > 0.2f) {
+            if (GetRightDistance(points[0], point, rightVector) > 0.4f || GetRightDistance(points[0], point, -rightVector) > 0.4f) {
                 return false;
             }
 

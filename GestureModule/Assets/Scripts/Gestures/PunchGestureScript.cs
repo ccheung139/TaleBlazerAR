@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,7 +26,7 @@ public class PunchGestureScript : MonoBehaviour
 
             // float GetFlatDistance;
             float flatDiff = GetFlatDistance(points[i - 1], points[i]);
-            float verticalTotalDiff = point.y - firstYPos;
+            float verticalTotalDiff = Math.Abs(point.y - firstYPos);
             float timeDiff = pointTimes[i] - pointTimes[i - 1];
 
             float speed = flatDiff / (timeDiff);
